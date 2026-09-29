@@ -130,17 +130,19 @@ function registerOrUpdateDevice(enclave, deviceId, deviceName, platform, clientI
 }
 
 const CONFIG_FILE = path.join(__dirname, '.caloriq_config.json');
-// Configurable Gemini API Key (from env, file, or set via UI)
+// Dual Gemini API Keys: Key 2 exclusively for Vision Scanning, Key 1 for general operations
 let userConfig = {
-  geminiApiKey: process.env.GEMINI_API_KEY || ''
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
+  geminiVisionApiKey: process.env.GEMINI_VISION_API_KEY || ''
 };
 try {
   if (fs.existsSync(CONFIG_FILE)) {
     const saved = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-    if (saved.geminiApiKey) {
-      userConfig.geminiApiKey = saved.geminiApiKey;
-      console.log('[Config] Loaded saved Gemini API key from .caloriq_config.json');
-    }
+    if (saved.geminiApiKey) userConfig.geminiApiKey = saved.geminiApiKey;
+    if (saved.geminiVisionApiKey) userConfig.geminiVisionApiKey = saved.geminiVisionApiKey;
+    console.log('[Config] Loaded Dual Gemini API Keys:');
+    console.log('• General Operations Key (Ria AI & Chat):', userConfig.geminiApiKey.substring(0, 8) + '...' + userConfig.geminiApiKey.substring(userConfig.geminiApiKey.length - 4));
+    console.log('• Dedicated Vision Key (Image Food Scanning):', userConfig.geminiVisionApiKey.substring(0, 8) + '...' + userConfig.geminiVisionApiKey.substring(userConfig.geminiVisionApiKey.length - 4));
   }
 } catch (e) {}
 
@@ -4422,10 +4424,18 @@ async function requestHandler(req, res) {
       userConfig.geminiApiKey = parsedUrl.query.key.trim().replace(/^["']|["']$/g, '');
       saveConfigToFile();
     }
+    if (parsedUrl.query && parsedUrl.query.visionKey) {
+      userConfig.geminiVisionApiKey = parsedUrl.query.visionKey.trim().replace(/^["']|["']$/g, '');
+      saveConfigToFile();
+    }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       hasApiKey: !!userConfig.geminiApiKey,
-      maskedKey: userConfig.geminiApiKey ? userConfig.geminiApiKey.substring(0, 6) + '...' + userConfig.geminiApiKey.substring(userConfig.geminiApiKey.length - 4) : ''
+      maskedKey: userConfig.geminiApiKey ? userConfig.geminiApiKey.substring(0, 6) + '...' + userConfig.geminiApiKey.substring(userConfig.geminiApiKey.length - 4) : '',
+      hasVisionApiKey: !!userConfig.geminiVisionApiKey,
+      maskedVisionKey: userConfig.geminiVisionApiKey ? userConfig.geminiVisionApiKey.substring(0, 6) + '...' + userConfig.geminiVisionApiKey.substring(userConfig.geminiVisionApiKey.length - 4) : '',
+      visionApiKey: userConfig.geminiVisionApiKey,
+      apiKey: userConfig.geminiApiKey
     }));
     return;
   }
@@ -4435,13 +4445,23 @@ async function requestHandler(req, res) {
     req.on('data', c => body += c);
     req.on('end', () => {
       try {
-        const { apiKey } = JSON.parse(body);
-        let cleanKey = (apiKey || '').trim().replace(/^["']|["']$/g, '').replace(/^(key|apiKey|GEMINI_API_KEY)=/i, '');
-        userConfig.geminiApiKey = cleanKey;
+        const { apiKey, visionApiKey } = JSON.parse(body);
+        if (apiKey) {
+          let cleanKey = (apiKey || '').trim().replace(/^["']|["']$/g, '').replace(/^(key|apiKey|GEMINI_API_KEY)=/i, '');
+          userConfig.geminiApiKey = cleanKey;
+        }
+        if (visionApiKey) {
+          let cleanVisionKey = (visionApiKey || '').trim().replace(/^["']|["']$/g, '').replace(/^(key|apiKey|GEMINI_VISION_API_KEY)=/i, '');
+          userConfig.geminiVisionApiKey = cleanVisionKey;
+        }
         saveConfigToFile();
-        console.log(`[Config] Gemini API key updated. Active: ${!!cleanKey}`);
+        console.log(`[Config] Gemini API keys updated. General: ${!!userConfig.geminiApiKey}, Vision: ${!!userConfig.geminiVisionApiKey}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, hasApiKey: !!userConfig.geminiApiKey }));
+        res.end(JSON.stringify({
+          success: true,
+          hasApiKey: !!userConfig.geminiApiKey,
+          hasVisionApiKey: !!userConfig.geminiVisionApiKey
+        }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
@@ -4888,7 +4908,9 @@ async function requestHandler(req, res) {
     req.on('end', async () => {
       try {
         const { imageBase64, mimeType, isTestNonFood, apiKeyOverride, foodHint } = JSON.parse(body);
-        const activeKey = apiKeyOverride || userConfig.geminiApiKey;
+        // Exclusively prioritize dedicated Vision Key (Key 2) for food photo recognition:
+        const activeKey = apiKeyOverride || userConfig.geminiVisionApiKey || userConfig.geminiApiKey;
+        console.log(`[Food Scanner] Invoking Gemini Vision with dedicated image scan key (${activeKey.substring(0, 8)}...${activeKey.substring(activeKey.length - 4)})`);
 
         // 1. Explicit Non-Food Test
         if (isTestNonFood) {

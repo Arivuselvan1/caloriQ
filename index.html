@@ -5325,8 +5325,15 @@
       return new Date().toISOString().split('T')[0];
     }
 
+    let _serverVisionKey = '';
+    let _serverGeneralKey = '';
+
     function getGeminiApiKey() {
-      return localStorage.getItem('caloriq_gemini_api_key') || window._geminiApiKey || '';
+      return localStorage.getItem('caloriq_gemini_api_key') || window._geminiApiKey || _serverGeneralKey;
+    }
+
+    function getGeminiVisionApiKey() {
+      return localStorage.getItem('caloriq_gemini_vision_api_key') || window._geminiVisionApiKey || _serverVisionKey;
     }
 
     function setGeminiApiKey(key) {
@@ -5336,6 +5343,16 @@
       } else {
         localStorage.removeItem('caloriq_gemini_api_key');
         window._geminiApiKey = '';
+      }
+    }
+
+    function setGeminiVisionApiKey(key) {
+      if (key && key.trim()) {
+        localStorage.setItem('caloriq_gemini_vision_api_key', key.trim());
+        window._geminiVisionApiKey = key.trim();
+      } else {
+        localStorage.removeItem('caloriq_gemini_vision_api_key');
+        window._geminiVisionApiKey = '';
       }
     }
 
@@ -6186,16 +6203,16 @@
 
     function updateScannerKeyBanner() {
       const banner = document.getElementById('scannerApiKeyBanner');
-      const key = getGeminiApiKey();
+      const key = getGeminiVisionApiKey();
       if (key) {
         const masked = key.substring(0, 6) + '...' + key.substring(key.length - 4);
         banner.innerHTML = `
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-primary">
-              <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-              <span>Gemini 3.8 Flash Active (${masked})</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Dedicated Vision Scanner Active (${masked})</span>
             </div>
-            <button onclick="openApiKeyModal()" class="text-secondary hover:text-primary underline uppercase text-[10px]">Change</button>
+            <span class="text-[9px] font-mono text-emerald-600 font-bold uppercase px-1.5 py-0.5 bg-surface-container rounded">High-Accuracy</span>
           </div>
         `;
       } else {
@@ -6238,6 +6255,11 @@
       try {
         const res = await fetch('/api/config');
         const cfg = await res.json();
+        if (cfg.visionApiKey) _serverVisionKey = cfg.visionApiKey;
+        if (cfg.apiKey) _serverGeneralKey = cfg.apiKey;
+        if (cfg.hasVisionApiKey) {
+          updateScannerKeyBanner();
+        }
         if (cfg.hasApiKey && !clientKey) {
           hasKey = true;
           masked = cfg.maskedKey;
@@ -6371,7 +6393,8 @@
 
       if (!selectedImageBase64) return alert('Please choose or take an image first, or pick from the quick catalog below.');
 
-      const apiKey = getGeminiApiKey();
+      // Dedicated Key 2 exclusively for image scanning:
+      const apiKey = getGeminiVisionApiKey();
       if (!apiKey) {
         alert('Gemini Vision AI requires a Google Gemini API Key. Please enter your key in the box above or pick from the catalog.');
         document.getElementById('modalInlineApiKey')?.focus();
