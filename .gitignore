@@ -1,5 +1,8 @@
 # CaloriQ Configuration & Credentials
 .caloriq_config.json
+.env
+.env*
+.env.local
 *.env
 *.env.*
 *.key
