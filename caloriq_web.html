@@ -1789,21 +1789,21 @@
 
   <!-- ==================== MODAL: PHOTO FOOD SCANNER ==================== -->
 
-  <div id="photoScannerModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-lg w-full p-5 border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh]">
+  <div id="photoScannerModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full p-5 border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh] rounded-xl overflow-hidden" style="background-color: #ffffff;">
       
-      <div class="flex justify-between items-center border-b border-surface-container-highest pb-3 shrink-0">
+      <div class="flex justify-between items-center border-b border-surface-container-highest pb-3 shrink-0" style="background-color: #ffffff;">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[20px] text-primary">photo_camera</span>
           <div>
             <div class="flex items-center gap-2">
               <h3 class="font-bold text-sm text-primary uppercase tracking-wider">HealthifySnap AI Indian Food Scanner</h3>
-              <span class="px-1.5 py-0.5 bg-primary text-on-primary text-[9px] font-bold uppercase">Vision Model</span>
+              <span class="px-1.5 py-0.5 bg-primary text-on-primary text-[9px] font-bold uppercase rounded">Vision Model</span>
             </div>
             <p class="text-[11px] text-secondary">Identifies Indian dishes, thalis, rotis, curries, and authentic serving sizes</p>
           </div>
         </div>
-        <button onclick="closeScannerModal()" class="w-8 h-8 flex items-center justify-center text-secondary hover:text-primary transition font-bold">✕</button>
+        <button onclick="closeScannerModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high transition font-bold">✕</button>
       </div>
 
       <div class="overflow-y-auto space-y-3.5 flex-1 pr-1 py-3 font-mono text-xs">
@@ -1875,23 +1875,23 @@
   </div>
 
   <!-- ==================== MODAL: FOOD REVIEW ==================== -->
-  <div id="foodReviewModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[90vh] flex flex-col border border-surface-container-highest shadow-2xl overflow-hidden font-mono">
-      <div class="p-3 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between">
+  <div id="foodReviewModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[90vh] flex flex-col border border-surface-container-highest shadow-2xl overflow-hidden font-mono rounded-xl" style="background-color: #ffffff;">
+      <div class="p-3 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between" style="background-color: #f6f3f2;">
         <div class="flex items-center gap-3">
-          <img id="reviewThumbnail" src="" class="w-10 h-10 object-cover border border-surface-container-highest hidden">
+          <img id="reviewThumbnail" src="" class="w-10 h-10 object-cover border border-surface-container-highest hidden rounded">
           <div>
             <h3 class="font-bold text-xs uppercase tracking-wider text-primary">Decomposition Review</h3>
             <span class="text-[10px] text-secondary">Adjust portions to recalculate macros</span>
           </div>
         </div>
-        <button onclick="closeFoodReviewModal()" class="text-secondary hover:text-primary font-bold">✕</button>
+        <button onclick="closeFoodReviewModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high font-bold transition">✕</button>
       </div>
 
-      <div class="p-3 bg-surface-container-lowest border-b border-surface-container-highest flex items-center justify-between text-xs">
+      <div class="p-3 bg-surface-container-lowest border-b border-surface-container-highest flex items-center justify-between text-xs" style="background-color: #ffffff;">
         <div class="flex items-center gap-2">
           <span class="text-secondary uppercase text-[10px]">Meal Slot:</span>
-          <select id="reviewMealType" class="bg-surface-container-low border border-surface-container-highest px-2 py-1 text-xs font-medium">
+          <select id="reviewMealType" class="bg-surface-container-low border border-surface-container-highest px-2 py-1 text-xs font-medium rounded">
             <option value="breakfast">Breakfast</option>
             <option value="lunch" selected>Lunch</option>
             <option value="dinner">Dinner</option>
@@ -1901,18 +1901,18 @@
         <button onclick="addNewCustomReviewItem()" class="text-[11px] underline uppercase text-primary font-semibold">+ Add Item</button>
       </div>
 
-      <div id="reviewItemsContainer" class="p-3 overflow-y-auto space-y-2 flex-1">
+      <div id="reviewItemsContainer" class="p-3 overflow-y-auto space-y-2 flex-1 bg-surface-container-lowest" style="background-color: #ffffff;">
         <!-- Dynamically rendered -->
       </div>
 
-      <div class="p-3 bg-surface-container-low border-t border-surface-container-highest flex items-center justify-between text-xs">
+      <div class="p-3 bg-surface-container-low border-t border-surface-container-highest flex items-center justify-between text-xs" style="background-color: #f6f3f2;">
         <div>
           <span class="text-[10px] text-secondary uppercase">Meal Total:</span>
           <div id="reviewTotalCalories" class="text-base font-bold text-primary font-mono">~575 kcal</div>
         </div>
         <div class="flex gap-2">
-          <button onclick="closeFoodReviewModal()" class="h-8 px-3 border border-surface-container-highest text-secondary text-xs uppercase font-semibold">Cancel</button>
-          <button onclick="approveAndSaveItems()" class="h-8 px-4 bg-primary text-on-primary text-xs uppercase font-semibold tracking-wider hover:bg-neutral-800 transition">
+          <button onclick="closeFoodReviewModal()" class="h-8 px-3 border border-surface-container-highest text-secondary text-xs uppercase font-semibold rounded-lg">Cancel</button>
+          <button onclick="approveAndSaveItems()" class="h-8 px-4 bg-primary text-on-primary text-xs uppercase font-semibold tracking-wider hover:bg-neutral-800 transition rounded-lg">
             Commit to Log
           </button>
         </div>
@@ -1921,11 +1921,11 @@
   </div>
 
   <!-- ==================== MODAL: API KEY CONFIG ==================== -->
-  <div id="apiKeyModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-md w-full p-5 border border-surface-container-highest shadow-2xl space-y-4 font-mono text-xs">
+  <div id="apiKeyModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-md w-full p-5 border border-surface-container-highest shadow-2xl space-y-4 font-mono text-xs rounded-xl" style="background-color: #ffffff;">
       <div class="flex justify-between items-center border-b border-surface-container-highest pb-2.5">
         <h3 class="font-bold text-xs uppercase tracking-wider text-primary">Google Gemini API Key</h3>
-        <button onclick="document.getElementById('apiKeyModal').classList.add('hidden')" class="text-secondary hover:text-primary font-bold">✕</button>
+        <button onclick="document.getElementById('apiKeyModal').classList.add('hidden')" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high font-bold transition">✕</button>
       </div>
       <p class="text-secondary text-[11px] leading-relaxed">
         Paste your Google AI Studio API key (starts with <code>AIzaSy...</code>) to activate live vision requests with <code>gemini-3.8-flash</code> (with automated fallback cascade).
@@ -1951,15 +1951,15 @@
   </div>
 
   <!-- ==================== MODAL: HEALTH CONNECT SYNC & PERMISSIONS ==================== -->
-  <div id="healthConnectModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[92vh] flex flex-col border border-surface-container-highest shadow-2xl font-mono text-xs overflow-hidden">
+  <div id="healthConnectModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[92vh] flex flex-col border border-surface-container-highest shadow-2xl font-mono text-xs overflow-hidden rounded-xl" style="background-color: #ffffff;">
       <!-- Modal Header -->
-      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
+      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0" style="background-color: #f6f3f2;">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           <h3 class="font-bold text-xs uppercase tracking-wider text-primary">02 / Health Connect Sync & Telemetry</h3>
         </div>
-        <button onclick="closeHealthConnectModal()" class="text-secondary hover:text-primary font-bold text-sm">✕</button>
+        <button onclick="closeHealthConnectModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high font-bold text-sm transition">✕</button>
       </div>
 
       <div class="p-4 overflow-y-auto space-y-4 flex-1">
@@ -2162,11 +2162,11 @@
   </div>
 
   <!-- ==================== MODAL: MULTI-DEVICE INTER-CONNECT SYNC (QR & CODE) ==================== -->
-  <div id="deviceSyncModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[94vh] flex flex-col border border-surface-container-highest shadow-2xl font-mono text-xs overflow-hidden">
+  <div id="deviceSyncModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full max-h-[94vh] flex flex-col border border-surface-container-highest shadow-2xl font-mono text-xs overflow-hidden rounded-xl" style="background-color: #ffffff;">
       
       <!-- Modal Header -->
-      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
+      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0" style="background-color: #f6f3f2;">
         <div class="flex items-center gap-2">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -2177,7 +2177,7 @@
             <span class="text-[9px] text-secondary font-mono">Enclave Protocol • Multi-Screen 2-Way Mirroring</span>
           </div>
         </div>
-        <button onclick="closeDeviceSyncModal()" class="text-secondary hover:text-primary font-bold text-sm">✕</button>
+        <button onclick="closeDeviceSyncModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high font-bold text-sm transition">✕</button>
       </div>
 
       <!-- Navigation Tabs inside Modal -->
