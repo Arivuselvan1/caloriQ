@@ -152,12 +152,8 @@ function saveConfigToFile() {
   } catch (e) {}
 }
 
-// Database in-memory store
-let foodEntries = [
-  { id: 1, date: getTodayStr(), time: '08:15 AM', mealType: 'breakfast', foodName: 'Oatmeal with Blueberries & Honey', quantity: 180, quantityUnit: 'g', calories: 260, protein: 7.5, carbs: 48, fat: 4.2, fiber: 5.5, sugar: 14, sodium: 85, source: 'manual', confidence: null },
-  { id: 2, date: getTodayStr(), time: '12:45 PM', mealType: 'lunch', foodName: 'Grilled Chicken Breast with Brown Rice', quantity: 300, quantityUnit: 'g', calories: 480, protein: 42.0, carbs: 44, fat: 9.5, fiber: 3.8, sugar: 1.2, sodium: 340, source: 'ai', confidence: 0.88 },
-  { id: 3, date: getTodayStr(), time: '04:00 PM', mealType: 'snack', foodName: 'Greek Yogurt with Almonds', quantity: 150, quantityUnit: 'g', calories: 190, protein: 15.0, carbs: 11, fat: 8.5, fiber: 2.1, sugar: 8, sodium: 60, source: 'ai', confidence: 0.92 }
-];
+// Database in-memory store (Clean empty slate until user logs data)
+let foodEntries = [];
 
 let userProfile = {
   age: 28,
@@ -176,57 +172,49 @@ let userProfile = {
   fiberTargetG: 28
 };
 
-let weightLogs = [
-  { date: '2026-09-23', weightKg: 69.2 },
-  { date: '2026-09-25', weightKg: 68.8 },
-  { date: '2026-09-27', weightKg: 68.4 },
-  { date: '2026-09-29', weightKg: 68.0 }
-];
+let weightLogs = [];
 
 // --- Trackers State: Water, Sleep, Handwash, Wearables (Fitbit) ---
 let trackerState = {
   water: {
     targetMl: 3000,
-    currentMl: 1750,
-    glassesCount: 7,
-    lastLogged: new Date(Date.now() - 35 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    hourlyLog: [
-      { time: '08:30 AM', amountMl: 250 },
-      { time: '10:00 AM', amountMl: 250 },
-      { time: '11:30 AM', amountMl: 500 },
-      { time: '01:30 PM', amountMl: 250 },
-      { time: '03:15 PM', amountMl: 500 }
-    ]
+    currentMl: 0,
+    glassesCount: 0,
+    lastLogged: 'None',
+    hourlyLog: []
   },
   sleep: {
     targetHours: 8.0,
-    durationHours: 7.4,
-    bedTime: '11:15 PM',
-    wakeTime: '06:39 AM',
-    quality: 'Restful',
-    efficiencyPct: 91,
-    deepSleepMinutes: 110,
-    remSleepMinutes: 95,
-    lightSleepMinutes: 239,
-    sleepDebtMinutes: 36
+    durationHours: 0,
+    bedTime: '--:--',
+    wakeTime: '--:--',
+    quality: 'None',
+    qualityScore: 0,
+    debtHours: 0,
+    efficiencyPct: 0,
+    deepSleepMinutes: 0,
+    remSleepMinutes: 0,
+    lightSleepMinutes: 0,
+    sleepDebtMinutes: 0
   },
   handwash: {
     targetCount: 6,
-    countToday: 4,
-    streakDays: 14,
-    lastTime: new Date(Date.now() - 75 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    todayWashes: 0,
+    countToday: 0,
+    streakDays: 0,
+    lastTime: 'None'
   },
   wearables: {
-    fitbitConnected: true,
-    fitbitDevice: 'Fitbit Charge 6 (NFC)',
-    batteryPct: 84,
-    lastSynced: '8 mins ago',
-    steps: 8420,
-    activeMinutes: 48,
-    restingHeartRate: 64,
-    heartRateNow: 72,
-    floorsClimbed: 9,
-    distanceKm: 6.2
+    fitbitConnected: false,
+    fitbitDevice: 'None',
+    batteryPct: 0,
+    lastSynced: 'Never',
+    steps: 0,
+    activeMinutes: 0,
+    restingHeartRate: 0,
+    heartRateNow: 0,
+    floorsClimbed: 0,
+    distanceKm: 0
   }
 };
 
@@ -386,36 +374,23 @@ let healthConnect = {
     writeExercise: true
   },
   metrics: {
-    steps: 8420,
-    activeCalories: 385,
-    basalCalories: 1540,
-    totalCalories: 1925,
-    isEstimated: false,
-    nutritionRecordsCount: 3,
+    steps: 0,
+    activeCalories: 0,
+    basalCalories: 1419,
+    totalCalories: 1419,
+    isEstimated: true,
+    nutritionRecordsCount: 0,
     lastSyncedAt: new Date().toISOString()
   },
-  hourlyData: [
-    { hour: '06:00', steps: 420, activeCal: 19 },
-    { hour: '08:00', steps: 1650, activeCal: 75 },
-    { hour: '10:00', steps: 890, activeCal: 40 },
-    { hour: '12:00', steps: 2150, activeCal: 98 },
-    { hour: '14:00', steps: 1120, activeCal: 51 },
-    { hour: '16:00', steps: 780, activeCal: 35 },
-    { hour: '18:00', steps: 1410, activeCal: 67 }
-  ],
+  hourlyData: [],
   syncIntervalMinutes: 20,
-  syncAuditLog: [
-    { timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), source: 'HealthConnectClient.insertRecords(NutritionRecord)', steps: 0, activeBurn: 0, details: 'Grilled Chicken & Rice (480 kcal)', status: 'SUCCESS' },
-    { timestamp: new Date(Date.now() - 20 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), source: 'WorkManager Background Job (20m Auto-Sync)', steps: 180, activeBurn: 8, details: 'Periodic 20-minute sync interval', status: 'SUCCESS' },
-    { timestamp: new Date(Date.now() - 40 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), source: 'Pixel Watch (Health Connect Mainline)', steps: 420, activeBurn: 19, details: 'AggregateRequest (Steps + Burn)', status: 'SUCCESS' },
-    { timestamp: new Date(Date.now() - 60 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), source: 'Android Pedometer Sensor', steps: 350, activeBurn: 16, details: 'Step Counter Telemetry', status: 'SUCCESS' }
-  ]
+  syncAuditLog: []
 };
 
 // 20-Minute Automatic Health Connect Background Sync Worker
 const AUTO_SYNC_INTERVAL_MS = 20 * 60 * 1000;
 const autoSyncTimer = setInterval(() => {
-  if (healthConnect.status === 'available' && healthConnect.permissions.steps) {
+  if (healthConnect.status === 'available' && healthConnect.permissions.steps && healthConnect.metrics.steps > 0) {
     const autoDelta = Math.floor(Math.random() * 120) + 40;
     healthConnect.metrics.steps += autoDelta;
     const activeDelta = Math.round(autoDelta * 0.045);
@@ -4995,6 +4970,35 @@ async function requestHandler(req, res) {
 
         // Fallback nutrition coaching synthesis
         setTimeout(() => {
+          if (!todayEntries || todayEntries.length === 0) {
+            const emptySummary = {
+              total_calories_in: 0,
+              total_calories_burned: healthConnect.metrics.totalCalories || 0,
+              net_vs_goal: -(userProfile.dailyCalorieTarget || 1650),
+              macro_summary: {
+                protein_g: 0,
+                carbs_g: 0,
+                fat_g: 0,
+                fiber_g: 0
+              },
+              steps: healthConnect.metrics.steps || 0,
+              pros: [
+                `Clean slate: Ready to track your daily nutrition and hit your ${userProfile.dailyCalorieTarget || 1650} kcal target!`
+              ],
+              cons: [
+                `No meals logged yet today. Use the One-Touch Indian Food Database or Food Scanner to log your first meal.`
+              ],
+              suggestions: [
+                `Tap "+ ADD ROW" or use HealthifySnap to log breakfast, lunch, or dinner.`,
+                `Drink water regularly to meet your hydration target.`
+              ],
+              overall_rating: 'good'
+            };
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(emptySummary));
+            return;
+          }
+
           const totalIn = todayEntries.reduce((sum, e) => sum + e.calories, 0);
           const totalProt = todayEntries.reduce((sum, e) => sum + e.protein, 0);
           const totalCarbs = todayEntries.reduce((sum, e) => sum + e.carbs, 0);

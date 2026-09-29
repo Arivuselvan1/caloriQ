@@ -219,10 +219,10 @@
       <div class="flex flex-col p-3 bg-surface-container-lowest shadow-sm">
         <span class="text-[10px] text-secondary uppercase tracking-widest font-semibold">Remaining</span>
         <div class="flex items-baseline gap-1 mt-1">
-          <span id="remainingCalories" class="text-xl md:text-2xl font-mono font-semibold text-primary">720</span>
+          <span id="remainingCalories" class="text-xl md:text-2xl font-mono font-semibold text-primary">1,650</span>
           <span class="text-[10px] text-secondary font-mono">kcal</span>
         </div>
-        <span class="text-[10px] text-secondary font-mono">Eaten: <strong id="eatenCalories">930</strong> kcal</span>
+        <span class="text-[10px] text-secondary font-mono">Eaten: <strong id="eatenCalories">0</strong> kcal</span>
       </div>
       <div onclick="openHealthConnectModal()" class="flex flex-col p-3 bg-surface-container-lowest shadow-sm cursor-pointer hover:border-primary border border-transparent transition group" title="Click to open Health Connect Telemetry Sync">
         <div class="flex items-center justify-between">
@@ -230,10 +230,10 @@
           <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
         </div>
         <div class="flex items-baseline gap-1 mt-1">
-          <span id="stepsCounter" class="text-xl md:text-2xl font-mono font-medium text-primary">8,420</span>
+          <span id="stepsCounter" class="text-xl md:text-2xl font-mono font-medium text-primary">0</span>
           <span class="text-[10px] text-secondary font-mono">steps</span>
         </div>
-        <span class="text-[10px] text-secondary font-mono">Burn: ~<span id="totalBurnCounter">1,925</span> kcal</span>
+        <span class="text-[10px] text-secondary font-mono">Burn: ~<span id="totalBurnCounter">0</span> kcal</span>
       </div>
       <div class="flex flex-col p-3 bg-surface-container-lowest shadow-sm">
         <span class="text-[10px] text-secondary uppercase tracking-widest font-semibold">Vision Engine</span>
@@ -563,19 +563,19 @@
           <div>
             <span class="text-[10px] uppercase tracking-widest text-secondary font-semibold">DAILY STEP PROGRESSION</span>
             <div class="flex items-baseline gap-2 mt-0.5">
-              <span id="hcStepsBanner" class="text-2xl font-bold text-primary font-mono">8,420</span>
+              <span id="hcStepsBanner" class="text-2xl font-bold text-primary font-mono">0</span>
               <span class="text-xs text-secondary font-mono">/ 10,000 steps</span>
-              <span id="hcStepPercent" class="text-xs font-bold text-primary px-1.5 py-0.5 bg-surface-container">84%</span>
+              <span id="hcStepPercent" class="text-xs font-bold text-primary px-1.5 py-0.5 bg-surface-container">0%</span>
             </div>
           </div>
           <div class="text-left sm:text-right text-[11px] text-secondary space-y-0.5">
-            <div><span>Last Synced: </span><strong id="hcLastSyncedTime" class="text-primary font-mono">Just now</strong></div>
+            <div><span>Last Synced: </span><strong id="hcLastSyncedTime" class="text-primary font-mono">Never</strong></div>
             <div><span>Framework: </span><span id="hcEngineVersionBadge" class="font-bold text-primary">Android 14 Framework (Mainline)</span></div>
           </div>
         </div>
         <!-- Progress Bar -->
         <div class="w-full bg-surface-container h-2.5 rounded-none overflow-hidden">
-          <div id="hcProgressBar" class="bg-primary h-full transition-all duration-500" style="width: 84.2%"></div>
+          <div id="hcProgressBar" class="bg-primary h-full transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
 
@@ -583,12 +583,12 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         <div class="p-3 bg-surface-container-lowest border border-surface-container-highest shadow-sm">
           <span class="text-[10px] text-secondary uppercase tracking-widest">Active Steps</span>
-          <div id="hcGridSteps" class="text-xl font-bold font-mono text-primary mt-1">8,420</div>
+          <div id="hcGridSteps" class="text-xl font-bold font-mono text-primary mt-1">0</div>
           <span class="text-[10px] text-secondary">Hardware Pedometer</span>
         </div>
         <div class="p-3 bg-surface-container-lowest border border-surface-container-highest shadow-sm">
           <span class="text-[10px] text-secondary uppercase tracking-widest">Active Burn</span>
-          <div id="hcGridActiveCal" class="text-xl font-bold font-mono text-primary mt-1">379 kcal</div>
+          <div id="hcGridActiveCal" class="text-xl font-bold font-mono text-primary mt-1">0 kcal</div>
           <span class="text-[10px] text-secondary">0.045 kcal/step + Workouts</span>
         </div>
         <div class="p-3 bg-surface-container-lowest border border-surface-container-highest shadow-sm">
@@ -598,7 +598,7 @@
         </div>
         <div class="p-3 bg-surface-container-lowest border border-surface-container-highest shadow-sm">
           <span class="text-[10px] text-secondary uppercase tracking-widest">Total Daily Burn</span>
-          <div id="hcGridTotalCal" class="text-xl font-bold font-mono text-primary mt-1">1,798 kcal</div>
+          <div id="hcGridTotalCal" class="text-xl font-bold font-mono text-primary mt-1">1,419 kcal</div>
           <span class="text-[10px] text-secondary font-semibold text-primary">Basal + Active Energy</span>
         </div>
       </div>
@@ -881,25 +881,25 @@
                 <span class="material-symbols-outlined text-[20px] text-cyan-600">water_drop</span>
                 <span class="font-bold text-xs uppercase text-primary tracking-wider">Water Hydration Tracker</span>
               </div>
-              <span id="waterPercentBadge" class="px-2 py-0.5 bg-cyan-900/20 text-cyan-500 font-bold text-[10px]">58% GOAL</span>
+              <span id="waterPercentBadge" class="px-2 py-0.5 bg-cyan-900/20 text-cyan-500 font-bold text-[10px]">0% GOAL</span>
             </div>
             <div class="flex items-center gap-4 mt-3">
               <!-- Visual Animated Water Glass -->
               <div class="relative w-16 h-24 border-2 border-primary bg-surface-container-low overflow-hidden rounded-b-lg flex flex-col justify-end shrink-0">
-                <div id="waterFillLevel" class="bg-cyan-500/80 transition-all duration-500 w-full" style="height: 58%;"></div>
+                <div id="waterFillLevel" class="bg-cyan-500/80 transition-all duration-500 w-full" style="height: 0%;"></div>
                 <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-primary pointer-events-none drop-shadow-xs">
-                  <span id="waterGlassLabel">1,750 ml</span>
+                  <span id="waterGlassLabel">0 ml</span>
                 </div>
               </div>
               <div class="space-y-1">
                 <div class="text-2xl font-bold font-mono text-primary">
-                  <span id="currentWaterAmount">1,750</span> <span class="text-xs text-secondary font-normal">/ 3,000 ml</span>
+                  <span id="currentWaterAmount">0</span> <span class="text-xs text-secondary font-normal">/ 3,000 ml</span>
                 </div>
                 <p class="text-[11px] text-secondary font-sans leading-tight">
                   Optimal hydration keeps metabolic rate elevated and flushes cellular sodium.
                 </p>
                 <div class="text-[10px] text-secondary font-mono">
-                  Remaining today: <strong id="waterRemainingLabel" class="text-primary font-bold">1,250 ml</strong>
+                  Remaining today: <strong id="waterRemainingLabel" class="text-primary font-bold">3,000 ml</strong>
                 </div>
               </div>
             </div>
@@ -930,27 +930,27 @@
                 <span class="material-symbols-outlined text-[20px] text-indigo-500">bedtime</span>
                 <span class="font-bold text-xs uppercase text-primary tracking-wider">Sleep &amp; Circadian Rhythm</span>
               </div>
-              <span id="sleepQualityBadge" class="px-2 py-0.5 bg-emerald-900/20 text-emerald-500 font-bold text-[10px]">OPTIMAL (88%)</span>
+              <span id="sleepQualityBadge" class="px-2 py-0.5 bg-neutral-800 text-secondary font-bold text-[10px]">NO LOG</span>
             </div>
             <div class="flex items-baseline justify-between mt-2">
               <div>
-                <span class="text-2xl font-bold font-mono text-primary" id="sleepDurationDisplay">7.5 hrs</span>
+                <span class="text-2xl font-bold font-mono text-primary" id="sleepDurationDisplay">0.0 hrs</span>
                 <span class="text-xs text-secondary"> / 8.0 hrs target</span>
               </div>
               <div class="text-[10px] text-secondary">
-                Debt: <strong id="sleepDebtDisplay" class="text-primary">-0.5 hrs</strong>
+                Debt: <strong id="sleepDebtDisplay" class="text-primary">0.0 hrs</strong>
               </div>
             </div>
             
             <!-- Sleep Stages Horizontal Bar -->
             <div class="mt-2 space-y-1">
               <div class="flex justify-between text-[9px] text-secondary uppercase font-mono">
-                <span>Stages: Deep (2.1h) • REM (1.8h) • Light (3.6h)</span>
+                <span>Stages: Deep (0.0h) • REM (0.0h) • Light (0.0h)</span>
               </div>
               <div class="w-full h-3 bg-surface-container flex overflow-hidden">
-                <div class="bg-indigo-700 h-full" style="width: 28%;" title="Deep Sleep 2.1h"></div>
-                <div class="bg-indigo-500 h-full" style="width: 24%;" title="REM Sleep 1.8h"></div>
-                <div class="bg-indigo-300 h-full" style="width: 48%;" title="Light Sleep 3.6h"></div>
+                <div class="bg-indigo-700 h-full" style="width: 0%;" title="Deep Sleep"></div>
+                <div class="bg-indigo-500 h-full" style="width: 0%;" title="REM Sleep"></div>
+                <div class="bg-indigo-300 h-full" style="width: 0%;" title="Light Sleep"></div>
               </div>
             </div>
           </div>
@@ -973,7 +973,7 @@
                 <span class="material-symbols-outlined text-[20px] text-blue-500">clean_hands</span>
                 <span class="font-bold text-xs uppercase text-primary tracking-wider">WHO 20-Second Handwash Tracker</span>
               </div>
-              <span id="handwashStreakBadge" class="px-2 py-0.5 bg-blue-900/20 text-blue-500 font-bold text-[10px]">🔥 7-DAY STREAK</span>
+              <span id="handwashStreakBadge" class="px-2 py-0.5 bg-neutral-800 text-secondary font-bold text-[10px]">🔥 0-DAY STREAK</span>
             </div>
             
             <div class="flex items-center gap-4 mt-3">
@@ -995,7 +995,7 @@
                   Rub palms, backs of hands, interlaced fingers, thumbs, and fingertips under running water.
                 </p>
                 <div class="text-[10px] text-secondary font-mono">
-                  Today: <strong id="handwashTodayCount" class="text-primary font-bold">5 washes logged</strong>
+                  Today: <strong id="handwashTodayCount" class="text-primary font-bold">0 washes logged</strong>
                 </div>
               </div>
             </div>
@@ -1017,7 +1017,7 @@
                 <span class="material-symbols-outlined text-[20px] text-amber-500">monitor_weight</span>
                 <span class="font-bold text-xs uppercase text-primary tracking-wider">Weight &amp; Asian Indian BMI</span>
               </div>
-              <span id="asianBmiCategoryBadge" class="px-2 py-0.5 bg-emerald-900/20 text-emerald-500 font-bold text-[10px]">NORMAL (22.2)</span>
+              <span id="asianBmiCategoryBadge" class="px-2 py-0.5 bg-emerald-900/20 text-emerald-500 font-bold text-[10px]">NORMAL (24.1)</span>
             </div>
 
             <div class="grid grid-cols-3 gap-2 mt-2 font-mono">
@@ -1027,11 +1027,11 @@
               </div>
               <div class="p-2 bg-surface-container-low border border-surface-container-highest">
                 <span class="text-[9px] text-secondary uppercase">Height</span>
-                <div id="asianBmiHeightVal" class="text-sm font-bold text-primary">175 cm</div>
+                <div id="asianBmiHeightVal" class="text-sm font-bold text-primary">168 cm</div>
               </div>
               <div class="p-2 bg-surface-container-low border border-surface-container-highest">
                 <span class="text-[9px] text-secondary uppercase">Asian BMI</span>
-                <div id="asianBmiValueDisplay" class="text-sm font-bold text-primary">22.20</div>
+                <div id="asianBmiValueDisplay" class="text-sm font-bold text-primary">24.1</div>
               </div>
             </div>
 
@@ -1085,14 +1085,14 @@
             <div class="space-y-1">
               <div class="flex items-center justify-between">
                 <span class="font-bold text-xs text-primary">Fitbit Charge 6</span>
-                <span id="fitbitStatusPill" class="text-[9px] font-bold text-emerald-600 bg-surface-container-lowest px-1.5 py-0.5 border border-surface-container-highest">CONNECTED</span>
+                <span id="fitbitStatusPill" class="text-[9px] font-bold text-secondary bg-surface-container-lowest px-1.5 py-0.5 border border-surface-container-highest">NOT CONNECTED</span>
               </div>
-              <div class="text-[10px] text-secondary">Battery: 82% • Heart Rate: 72 bpm resting</div>
-              <div class="text-[10px] text-secondary font-bold text-primary">Steps: 8,420 • Active Burn: 379 kcal</div>
+              <div class="text-[10px] text-secondary">Battery: -- • Heart Rate: -- bpm</div>
+              <div class="text-[10px] text-secondary font-bold text-primary">Steps: 0 • Active Burn: 0 kcal</div>
             </div>
             <div class="mt-2 pt-2 border-t border-surface-container-highest flex justify-between items-center text-[10px]">
-              <span class="text-secondary" id="fitbitLastSyncLabel">Synced 2m ago</span>
-              <button onclick="syncWearables('fitbit')" class="underline uppercase text-primary font-semibold">Sync Fitbit</button>
+              <span class="text-secondary" id="fitbitLastSyncLabel">Never</span>
+              <button onclick="syncWearables('fitbit')" class="underline uppercase text-primary font-semibold">Connect Fitbit</button>
             </div>
           </div>
 
@@ -5746,19 +5746,19 @@
       // Sleep UI
       if (s) {
         const durEl = document.getElementById('sleepDurationDisplay');
-        if (durEl) durEl.innerText = s.durationHours + ' hrs';
+        if (durEl) durEl.innerText = (s.durationHours || 0) + ' hrs';
         const qEl = document.getElementById('sleepQualityBadge');
-        if (qEl) qEl.innerText = s.quality.toUpperCase() + ' (' + s.qualityScore + '%)';
+        if (qEl) qEl.innerText = s.durationHours > 0 ? (s.quality.toUpperCase() + ' (' + (s.qualityScore || 85) + '%)') : 'NO LOG';
         const debtEl = document.getElementById('sleepDebtDisplay');
-        if (debtEl) debtEl.innerText = (s.debtHours >= 0 ? '+' : '') + s.debtHours + ' hrs';
+        if (debtEl) debtEl.innerText = s.durationHours > 0 ? ((s.debtHours >= 0 ? '+' : '') + s.debtHours + ' hrs') : '0.0 hrs';
       }
 
       // Handwash UI
       if (h) {
         const countEl = document.getElementById('handwashTodayCount');
-        if (countEl) countEl.innerText = (h.todayWashes || 0) + ' washes logged';
+        if (countEl) countEl.innerText = (h.countToday || h.todayWashes || 0) + ' washes logged';
         const streakEl = document.getElementById('handwashStreakBadge');
-        if (streakEl) streakEl.innerText = '🔥 ' + (h.streakDays || 7) + '-DAY STREAK';
+        if (streakEl) streakEl.innerText = '🔥 ' + (h.streakDays || 0) + '-DAY STREAK';
       }
 
       // Asian Indian BMI UI
@@ -6726,20 +6726,24 @@ INSTRUCTIONS:
         // Audit Log
         const tbody = document.getElementById('healthAuditLogBody');
         if (tbody && hc.syncAuditLog) {
-          tbody.innerHTML = hc.syncAuditLog.map(log => `
-            <tr class="hover:bg-surface-container-low transition">
-              <td class="py-2 px-3 font-semibold text-primary whitespace-nowrap">${log.timestamp}</td>
-              <td class="py-2 px-3 text-secondary text-[11px]">
-                <div class="font-medium text-primary">${log.source}</div>
-                ${log.details ? `<div class="text-[10px] text-secondary font-mono">${log.details}</div>` : ''}
-              </td>
-              <td class="py-2 px-3 text-right font-bold text-primary">${log.steps > 0 ? '+' : ''}${log.steps.toLocaleString()}</td>
-              <td class="py-2 px-3 text-right font-bold text-primary">${log.activeBurn > 0 ? '+' + log.activeBurn + ' kcal' : '-'}</td>
-              <td class="py-2 px-3 text-center">
-                <span class="inline-block px-1.5 py-0.5 text-[9px] font-bold bg-surface-container text-primary uppercase">${log.status}</span>
-              </td>
-            </tr>
-          `).join('');
+          if (hc.syncAuditLog.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-secondary font-mono text-xs">NO HEALTH CONNECT TELEMETRY LOGGED YET. MEALS OR WORKOUTS WILL APPEAR HERE.</td></tr>';
+          } else {
+            tbody.innerHTML = hc.syncAuditLog.map(log => `
+              <tr class="hover:bg-surface-container-low transition">
+                <td class="py-2 px-3 font-semibold text-primary whitespace-nowrap">${log.timestamp}</td>
+                <td class="py-2 px-3 text-secondary text-[11px]">
+                  <div class="font-medium text-primary">${log.source}</div>
+                  ${log.details ? `<div class="text-[10px] text-secondary font-mono">${log.details}</div>` : ''}
+                </td>
+                <td class="py-2 px-3 text-right font-bold text-primary">${log.steps > 0 ? '+' : ''}${log.steps.toLocaleString()}</td>
+                <td class="py-2 px-3 text-right font-bold text-primary">${log.activeBurn > 0 ? '+' + log.activeBurn + ' kcal' : '-'}</td>
+                <td class="py-2 px-3 text-center">
+                  <span class="inline-block px-1.5 py-0.5 text-[9px] font-bold bg-surface-container text-primary uppercase">${log.status}</span>
+                </td>
+              </tr>
+            `).join('');
+          }
         }
 
         // Update Step 3 Badge
@@ -6770,17 +6774,14 @@ INSTRUCTIONS:
       const labels = document.getElementById('hourlyLabelsContainer');
       if (!container || !labels) return;
 
-      const data = (hourlyData && hourlyData.length > 0) ? hourlyData : [
-        { hour: '06:00', steps: 420, activeCal: 19 },
-        { hour: '08:00', steps: 1650, activeCal: 75 },
-        { hour: '10:00', steps: 890, activeCal: 40 },
-        { hour: '12:00', steps: 2150, activeCal: 98 },
-        { hour: '14:00', steps: 1120, activeCal: 51 },
-        { hour: '16:00', steps: 780, activeCal: 35 },
-        { hour: '18:00', steps: 1410, activeCal: 67 }
-      ];
+      if (!hourlyData || hourlyData.length === 0) {
+        container.innerHTML = '<div class="w-full h-full flex items-center justify-center text-secondary text-[11px] font-mono">NO TELEMETRY RECORDED YET. WALK OR LOG A WORKOUT TO SEE HOURLY BREAKDOWN.</div>';
+        labels.innerHTML = '<span class="text-center w-full text-[10px] text-secondary font-mono">--:--</span>';
+        return;
+      }
 
-      const maxSteps = Math.max(...data.map(d => d.steps), 2500);
+      const data = hourlyData;
+      const maxSteps = Math.max(...data.map(d => d.steps), 1000);
 
       container.innerHTML = data.map(d => {
         const heightPct = Math.max(12, Math.round((d.steps / maxSteps) * 100));
