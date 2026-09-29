@@ -1839,6 +1839,21 @@
           </label>
         </div>
 
+        <!-- Hidden Ingredients & Cooking Note Hint Input -->
+        <div class="p-3 bg-surface-container-low border border-surface-container-highest rounded-lg space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="cookingNotesInput" class="text-[10px] uppercase font-bold text-secondary tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px] text-primary">skillet</span>
+              <span>Cooking Notes / Hidden Ingredients (Optional)</span>
+            </label>
+            <span class="text-[9px] text-primary font-mono bg-surface-container px-1.5 py-0.5 rounded font-bold">Accuracy Boost</span>
+          </div>
+          <p class="text-[10px] text-secondary leading-tight">
+            AI cannot see hidden fats, oils, or sugars. Add notes like: <em>"Cooked with 2 tbsp ghee", "half cup basmati rice", "sugar-free chai"</em>.
+          </p>
+          <input type="text" id="cookingNotesInput" placeholder="e.g. Cooked with 2 tbsp ghee, 1 cup dal, 2 rotis..." class="w-full text-xs font-mono bg-surface-container-lowest border border-surface-container-highest text-primary px-3 py-2 rounded outline-none placeholder:text-secondary focus:border-primary transition" style="background-color: #ffffff;">
+        </div>
+
         <div id="webcamContainer" class="hidden space-y-2">
           <video id="webcamVideo" autoplay playsinline class="w-full h-44 bg-black object-cover"></video>
           <button type="button" onclick="captureWebcamSnapshot()" class="w-full h-8 bg-primary text-on-primary font-semibold text-[11px] uppercase tracking-wider">
@@ -6986,29 +7001,28 @@
       document.getElementById('analysisLoading').classList.remove('hidden');
       document.getElementById('analyzeBtn').disabled = true;
 
-      const strictPrompt = `You are an expert nutritional computer vision assistant for CaloriQ.
-Analyze the provided image with extreme fidelity to what is visibly shown.
+      const cookingNotes = (document.getElementById('cookingNotesInput')?.value || '').trim();
 
-INSTRUCTIONS:
-1. Identify all visible edible food components, dishes, snacks, or beverages in this picture (including home-cooked meals, regional cuisine, items served on leaves, thalis, or bowls, even in dim or ambient lighting).
-2. For each identified item, return:
-   - name: Descriptive food name
-   - estimated_grams: Realistic portion weight in grams
-   - calories: Estimated kcal
-   - protein: Estimated protein in grams
-   - carbs: Estimated carbs in grams
-   - fat: Estimated fat in grams
-   - fiber: Estimated fiber in grams
-   - sugar: Estimated sugar in grams
-   - sodium: Estimated sodium in mg
-   - confidence: Numeric score between 0.10 and 0.99
-3. Only if the photo clearly contains NO edible food or drink whatsoever (e.g. pure text screenshot, blank wall, car, furniture, or human selfie with no food), return:
-   {"error": "no_food_detected", "message": "No food detected in this photo. Please photograph a meal or snack."}
-4. Format output as STRICT JSON with schema:
+      let promptText = `You are an expert nutritionist AI. Analyze the food items present in this image.
+Estimate the portion size of each item based on visual cues and realistic volume.
+For each item, provide the estimated weight in grams, total calories, protein, carbohydrates, fats, dietary fiber, sugar, sodium, and confidence score.`;
+
+      if (cookingNotes.length > 0) {
+        promptText += `\n\nUSER'S COOKING NOTES / HIDDEN INGREDIENTS HINT:
+"${cookingNotes}"
+IMPORTANT: The user has provided context regarding hidden ingredients (e.g. oils, ghee, butter, portion count, sugar, or preparation method) that cannot be fully seen visually. You MUST adapt your caloric and macronutrient calculations to incorporate these notes accurately.`;
+      }
+
+      promptText += `\n\nINSTRUCTIONS:
+1. Identify all visible edible food components, dishes, snacks, or beverages in this picture.
+2. If the photo clearly contains NO edible food or drink whatsoever, return:
+   {"error": "no_food_detected", "message": "No food detected in this photo. Please photograph an actual meal or snack."}
+3. Respond strictly in JSON format matching this schema:
 {
   "items": [
     {
-      "name": "string",
+      "name": "string (food name)",
+      "portion": "string (e.g. 1 bowl, 2 pieces, 1 cup)",
       "estimated_grams": number,
       "calories": number,
       "protein": number,
@@ -7020,7 +7034,8 @@ INSTRUCTIONS:
       "confidence": number
     }
   ]
-}`;
+}
+Do not include markdown formatting or wrapper text.`;
 
       try {
         let items = null;
@@ -7036,7 +7051,7 @@ INSTRUCTIONS:
               body: JSON.stringify({
                 contents: [{
                   parts: [
-                    { text: strictPrompt },
+                    { text: promptText },
                     { inlineData: { mimeType: selectedMimeType || 'image/jpeg', data: selectedImageBase64 } }
                   ]
                 }],
@@ -7078,6 +7093,7 @@ INSTRUCTIONS:
             body: JSON.stringify({
               imageBase64: selectedImageBase64,
               mimeType: selectedMimeType,
+              cookingNotes: cookingNotes,
               isTestNonFood: false,
               apiKeyOverride: apiKey,
               deviceId: 'device-local-user-123'
@@ -7152,19 +7168,20 @@ INSTRUCTIONS:
             <button onclick="removeReviewItem(${idx})" class="text-secondary hover:text-error text-xs font-bold">✕</button>
           </div>
           <div class="flex justify-between items-center text-xs">
-            <div class="flex items-center gap-1.5">
-              <span class="text-secondary text-[10px] uppercase">Portion:</span>
-              <input type="number" value="${Math.round(item.estimated_grams)}" onchange="recalcReviewPortion(${idx}, parseFloat(this.value))" class="w-16 p-1 border border-surface-container-highest text-right font-bold text-primary bg-surface-container-lowest">
-              <span>g</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-secondary text-[10px] uppercase font-bold">Portion:</span>
+              ${item.portion ? `<span class="px-1.5 py-0.5 bg-surface-container text-primary text-[10px] font-bold rounded">${item.portion}</span>` : ''}
+              <input type="number" value="${Math.round(item.estimated_grams)}" onchange="recalcReviewPortion(${idx}, parseFloat(this.value))" class="w-16 p-1 border border-surface-container-highest text-right font-bold text-primary bg-surface-container-lowest rounded">
+              <span class="text-secondary font-mono text-[10px]">grams</span>
             </div>
-            <div class="font-bold text-primary">${calText}</div>
+            <div class="font-bold text-primary font-mono">${calText}</div>
           </div>
-          <div class="flex items-center justify-between text-[10px] pt-1.5 border-t border-surface-container-highest">
-            <span class="text-secondary uppercase">Precision: <strong class="text-primary">${Math.round(item.confidence*100)}%</strong> ${isLow ? '(Confidence Range)' : ''}</span>
+          <div class="flex items-center justify-between text-[10px] pt-1.5 border-t border-surface-container-highest font-mono">
+            <span class="text-secondary uppercase">Precision: <strong class="text-primary">${Math.round((item.confidence || 0.95)*100)}%</strong> ${isLow ? '(Confidence Range)' : ''}</span>
             <div class="flex gap-2 font-medium text-secondary">
-              <span>P: ${item.protein.toFixed(1)}g</span>
-              <span>C: ${item.carbs.toFixed(1)}g</span>
-              <span>F: ${item.fat.toFixed(1)}g</span>
+              <span>P: ${(item.protein || 0).toFixed(1)}g</span>
+              <span>C: ${(item.carbs || 0).toFixed(1)}g</span>
+              <span>F: ${(item.fat || 0).toFixed(1)}g</span>
             </div>
           </div>
         `;

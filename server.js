@@ -534,30 +534,27 @@ const GEMINI_MODELS = [
   'gemini-flash-latest'
 ];
 
-function callLiveGeminiVision(apiKey, imageBase64, mimeType) {
-  const strictPrompt = `You are an expert nutritional computer vision assistant for CaloriQ.
-Analyze the provided image with extreme fidelity to what is visibly shown.
+function callLiveGeminiVision(apiKey, imageBase64, mimeType, cookingNotes = '') {
+  let promptText = `You are an expert nutritionist AI. Analyze the food items present in this image.
+Estimate the portion size of each item based on visual cues and realistic volume.
+For each item, provide the estimated weight in grams, total calories, protein, carbohydrates, fats, dietary fiber, sugar, sodium, and confidence score.`;
 
-INSTRUCTIONS:
-1. Identify all visible edible food components, dishes, snacks, or beverages in this picture (including home-cooked meals, regional cuisine, items served on leaves, thalis, or bowls, even in dim or ambient lighting).
-2. For each identified item, return:
-   - name: Descriptive food name
-   - estimated_grams: Realistic portion weight in grams
-   - calories: Estimated kcal
-   - protein: Estimated protein in grams
-   - carbs: Estimated carbs in grams
-   - fat: Estimated fat in grams
-   - fiber: Estimated fiber in grams
-   - sugar: Estimated sugar in grams
-   - sodium: Estimated sodium in mg
-   - confidence: Numeric score between 0.10 and 0.99
-3. Only if the photo clearly contains NO edible food or drink whatsoever (e.g. pure text screenshot, blank wall, car, furniture, or human selfie with no food), return:
-   {"error": "no_food_detected", "message": "No food detected in this photo. Please photograph a meal or snack."}
-4. Format output as STRICT JSON with schema:
+  if (cookingNotes && cookingNotes.trim().length > 0) {
+    promptText += `\n\nUSER'S COOKING NOTES / HIDDEN INGREDIENTS HINT:
+"${cookingNotes.trim()}"
+IMPORTANT: The user has provided context regarding hidden ingredients (e.g. oils, ghee, butter, portion count, sugar, or preparation method) that cannot be fully seen visually. You MUST adapt your caloric and macronutrient calculations to incorporate these notes accurately.`;
+  }
+
+  promptText += `\n\nINSTRUCTIONS:
+1. Identify all visible edible food components, dishes, snacks, or beverages in this picture.
+2. If the photo clearly contains NO edible food or drink whatsoever, return:
+   {"error": "no_food_detected", "message": "No food detected in this photo. Please photograph an actual meal or snack."}
+3. Respond strictly in JSON format matching this schema:
 {
   "items": [
     {
-      "name": "string",
+      "name": "string (food name)",
+      "portion": "string (e.g. 1 bowl, 2 pieces, 1 cup)",
       "estimated_grams": number,
       "calories": number,
       "protein": number,
@@ -569,7 +566,8 @@ INSTRUCTIONS:
       "confidence": number
     }
   ]
-}`;
+}
+Do not include markdown formatting or wrapper text.`;
 
   return new Promise(async (resolve, reject) => {
     let lastError = null;
@@ -580,12 +578,12 @@ INSTRUCTIONS:
         console.log(`[Gemini Vision] Attempting model: ${model}...`);
         let result;
         try {
-          result = await makeSingleGeminiVisionCall(model, apiKey, imageBase64, mimeType, strictPrompt);
+          result = await makeSingleGeminiVisionCall(model, apiKey, imageBase64, mimeType, promptText);
         } catch (firstErr) {
           if (firstErr.message.includes('high demand') || firstErr.message.includes('503')) {
             console.log(`[Gemini Vision] ${model} demand spike, retrying after 600ms...`);
             await new Promise(r => setTimeout(r, 600));
-            result = await makeSingleGeminiVisionCall(model, apiKey, imageBase64, mimeType, strictPrompt);
+            result = await makeSingleGeminiVisionCall(model, apiKey, imageBase64, mimeType, promptText);
           } else {
             throw firstErr;
           }
@@ -647,7 +645,7 @@ function makeSingleGeminiVisionCall(model, apiKey, imageBase64, mimeType, strict
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
       },
-      timeout: 30000
+      timeout: 35000
     };
 
     const req = https.request(options, (res) => {
@@ -5114,10 +5112,10 @@ async function requestHandler(req, res) {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        const { imageBase64, mimeType, isTestNonFood, apiKeyOverride, foodHint } = JSON.parse(body);
+        const { imageBase64, mimeType, isTestNonFood, apiKeyOverride, foodHint, cookingNotes } = JSON.parse(body);
         // Exclusively prioritize dedicated Vision Key (Key 2) for food photo recognition:
         const activeKey = apiKeyOverride || userConfig.geminiVisionApiKey || userConfig.geminiApiKey;
-        console.log(`[Food Scanner] Invoking Gemini Vision with dedicated image scan key (${activeKey.substring(0, 8)}...${activeKey.substring(activeKey.length - 4)})`);
+        console.log(`[Food Scanner] Invoking Gemini Vision with dedicated image scan key (${activeKey.substring(0, 8)}...${activeKey.substring(activeKey.length - 4)})${cookingNotes ? ` [Hint: "${cookingNotes.substring(0, 40)}..."]` : ''}`);
 
         // 1. Explicit Non-Food Test
         if (isTestNonFood) {
@@ -5137,11 +5135,11 @@ async function requestHandler(req, res) {
           return;
         }
 
-        // 3. Live Gemini 2.5 Flash Vision API Call
+        // 3. Live Gemini Flash Multimodal Vision API Call (Single-pass recognition + structured volume estimation)
         if (activeKey && imageBase64 && imageBase64.length > 200) {
           try {
-            console.log('Invoking Live Gemini 2.5 Flash Vision API with strict fidelity prompt...');
-            const liveResult = await callLiveGeminiVision(activeKey, imageBase64, mimeType);
+            console.log('Invoking Live Gemini Flash Multimodal Vision API with structured outputs...');
+            const liveResult = await callLiveGeminiVision(activeKey, imageBase64, mimeType, cookingNotes);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(liveResult));
             return;
