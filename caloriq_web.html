@@ -150,6 +150,11 @@
           <span id="syncDeviceCountLabel" class="font-mono text-[11px]">Sync (1)</span>
         </button>
 
+        <button onclick="openOnboardingModal()" id="headerOnboardingBtn" title="Personalised Metabolism & Workout Architect" class="h-9 px-3 bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 text-xs font-semibold tracking-wide uppercase flex items-center gap-1.5 rounded-lg shadow-2xs transition">
+          <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+          <span class="hidden sm:inline">AI Setup</span>
+        </button>
+
         <button onclick="openApiKeyModal()" id="headerApiKeyBtn" class="h-9 px-3 bg-surface-container-lowest text-primary border border-surface-container-highest hover:bg-surface-container text-xs font-semibold tracking-wide uppercase flex items-center gap-1.5 rounded-lg shadow-2xs transition">
           <span class="material-symbols-outlined text-[16px]">key</span>
           <span id="apiKeyBtnLabel" class="hidden sm:inline">Gemini Key</span>
@@ -1329,6 +1334,377 @@
 
   </main>
 
+
+  <!-- ==================== MODAL: ONBOARDING / SIGNUP ==================== -->
+  <div id="onboardingModal" class="fixed inset-0 bg-primary/80 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-2xl w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[96vh] font-mono overflow-hidden rounded-xl">
+
+      <!-- Header -->
+      <div class="p-4 sm:p-5 bg-gradient-to-r from-surface-container-low to-surface-container border-b border-surface-container-highest shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+              <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+            </div>
+            <div>
+              <div class="text-[9px] font-mono text-secondary uppercase tracking-widest">CaloriQ AI Health Architect</div>
+              <div class="font-bold text-sm text-primary">Personalised Metabolism &amp; Workout Setup</div>
+            </div>
+          </div>
+          <button onclick="skipOnboarding()" class="text-[10px] text-secondary hover:text-primary font-mono uppercase tracking-wider px-2 py-1 rounded hover:bg-surface-container transition">Skip</button>
+        </div>
+
+        <!-- Step progress bar -->
+        <div class="flex gap-1.5 mt-3">
+          <div id="ob-step-dot-1" class="h-1.5 flex-1 bg-primary rounded-full transition-all duration-300"></div>
+          <div id="ob-step-dot-2" class="h-1.5 flex-1 bg-surface-container-highest rounded-full transition-all duration-300"></div>
+          <div id="ob-step-dot-3" class="h-1.5 flex-1 bg-surface-container-highest rounded-full transition-all duration-300"></div>
+          <div id="ob-step-dot-4" class="h-1.5 flex-1 bg-surface-container-highest rounded-full transition-all duration-300"></div>
+        </div>
+        <div class="flex justify-between mt-1 text-[9px] font-mono">
+          <span id="ob-step-label" class="text-secondary uppercase">Step 1 of 4 — Body Metrics &amp; BMI</span>
+          <span id="ob-step-num" class="text-primary font-bold">1 / 4</span>
+        </div>
+      </div>
+
+      <!-- Steps Container -->
+      <div class="overflow-y-auto flex-1 p-4 sm:p-5">
+
+        <!-- STEP 1: Basic Info & Live Asian-Indian BMI -->
+        <div id="ob-step-1" class="space-y-4">
+          <div class="flex items-center gap-2 pb-1 border-b border-surface-container-highest">
+            <span class="material-symbols-outlined text-[18px] text-primary">person</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-primary">Step 1: Physical Profile</span>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Your Name / Nickname</label>
+            <input id="ob-name" type="text" placeholder="e.g. Arjun, Priya, Rahul..." class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none placeholder:text-secondary focus:border-primary transition">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Age (Years)</label>
+              <input id="ob-age" type="number" min="12" max="100" placeholder="26" value="26" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Biological Sex</label>
+              <select id="ob-sex" onchange="updateLiveObBmi()" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+                <option value="male" selected>Male (+5 kcal)</option>
+                <option value="female">Female (-161 kcal)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Height (cm)</label>
+              <input id="ob-height" type="number" min="100" max="230" placeholder="172" value="172" oninput="updateLiveObBmi()" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+              <span class="text-[9px] text-secondary mt-0.5 block">5'8" = 173 cm · 5'5" = 165 cm</span>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Current Weight (kg)</label>
+              <input id="ob-weight" type="number" min="30" max="250" step="0.5" placeholder="70" value="70" oninput="updateLiveObBmi()" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+              <span class="text-[9px] text-secondary mt-0.5 block">Measured morning, fasting</span>
+            </div>
+          </div>
+
+          <!-- Live Asian Indian BMI Calculator Box -->
+          <div id="ob-bmi-box" class="p-3.5 bg-surface-container-low border border-surface-container-highest rounded-xl space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-secondary uppercase font-bold tracking-wider">Asian Indian BMI</span>
+                <div class="text-[9px] text-secondary">WHO consensus cut-offs for South Asian populations</div>
+              </div>
+              <div class="text-right">
+                <span id="ob-bmi-num" class="text-xl font-bold font-mono text-primary">23.7</span>
+                <span id="ob-bmi-badge" class="ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-yellow-500/10 text-yellow-500">Overweight</span>
+              </div>
+            </div>
+
+            <!-- Visual Gradient Scale -->
+            <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden flex">
+              <div class="h-full bg-blue-400" style="width: 25%" title="<18.5 Underweight"></div>
+              <div class="h-full bg-emerald-400" style="width: 35%" title="18.5 - 22.9 Healthy"></div>
+              <div class="h-full bg-yellow-400" style="width: 20%" title="23.0 - 24.9 Overweight"></div>
+              <div class="h-full bg-red-400" style="width: 20%" title=">=25.0 Obese"></div>
+            </div>
+            <div class="flex justify-between text-[8px] text-secondary font-mono">
+              <span>&lt;18.5 Under</span>
+              <span class="text-emerald-500 font-bold">18.5–22.9 Healthy</span>
+              <span class="text-yellow-500 font-bold">23–24.9 Over</span>
+              <span class="text-red-500 font-bold">&ge;25 Obese</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Goals, Activity & Diet -->
+        <div id="ob-step-2" class="space-y-4 hidden">
+          <div class="flex items-center gap-2 pb-1 border-b border-surface-container-highest">
+            <span class="material-symbols-outlined text-[18px] text-primary">flag</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-primary">Step 2: Goals &amp; Nutrition Style</span>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">What is your primary fitness goal?</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label class="ob-goal-opt flex items-center gap-3 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition group has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input type="radio" name="ob-primary-goal" value="lose_weight" checked class="sr-only">
+                <span class="material-symbols-outlined text-[22px] text-orange-400">local_fire_department</span>
+                <div>
+                  <div class="font-bold text-xs text-primary">Fat Loss &amp; Lean Out</div>
+                  <div class="text-[9px] text-secondary">Caloric deficit with high protein retention</div>
+                </div>
+              </label>
+
+              <label class="ob-goal-opt flex items-center gap-3 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition group has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input type="radio" name="ob-primary-goal" value="gain_muscle" class="sr-only">
+                <span class="material-symbols-outlined text-[22px] text-blue-400">fitness_center</span>
+                <div>
+                  <div class="font-bold text-xs text-primary">Muscle Hypertrophy &amp; Strength</div>
+                  <div class="text-[9px] text-secondary">Slight caloric surplus &amp; progressive overload</div>
+                </div>
+              </label>
+
+              <label class="ob-goal-opt flex items-center gap-3 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition group has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input type="radio" name="ob-primary-goal" value="general_fitness" class="sr-only">
+                <span class="material-symbols-outlined text-[22px] text-emerald-400">favorite</span>
+                <div>
+                  <div class="font-bold text-xs text-primary">Health &amp; Maintenance</div>
+                  <div class="text-[9px] text-secondary">Maintain exact weight, elevate daily vitality</div>
+                </div>
+              </label>
+
+              <label class="ob-goal-opt flex items-center gap-3 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition group has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input type="radio" name="ob-primary-goal" value="endurance" class="sr-only">
+                <span class="material-symbols-outlined text-[22px] text-purple-400">directions_run</span>
+                <div>
+                  <div class="font-bold text-xs text-primary">Cardiovascular Stamina</div>
+                  <div class="text-[9px] text-secondary">Boost VO2 max, endurance running &amp; HIIT</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Daily Activity Level</label>
+              <select id="ob-activity" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+                <option value="sedentary">Sedentary (Desk job, minimal movement · 1.20x)</option>
+                <option value="light">Lightly Active (Walking 5k steps or 1-2 days gym · 1.375x)</option>
+                <option value="moderate" selected>Moderately Active (Gym 3-5 days/week · 1.55x)</option>
+                <option value="active">Very Active (Gym 6-7 days/week · 1.725x)</option>
+                <option value="veryActive">Extreme Athlete (Heavy training 2x/day · 1.90x)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Dietary Preference</label>
+              <select id="ob-diet" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+                <option value="vegetarian" selected>Vegetarian (Dairy, paneer, lentils, curd)</option>
+                <option value="non_vegetarian">Non-Vegetarian (Eggs, chicken, fish, mutton)</option>
+                <option value="eggetarian">Eggetarian (Vegetarian + Eggs)</option>
+                <option value="vegan">Vegan (100% plant-based, soy, legumes)</option>
+                <option value="jain">Jain Vegetarian (No onion, garlic, or root veg)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Workout Location & Equipment -->
+        <div id="ob-step-3" class="space-y-4 hidden">
+          <div class="flex items-center gap-2 pb-1 border-b border-surface-container-highest">
+            <span class="material-symbols-outlined text-[18px] text-primary">exercise</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-primary">Step 3: Training Environment</span>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">Workout Location</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="flex flex-col items-center gap-1.5 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-center">
+                <input type="radio" name="ob-workout-loc" value="gym" class="sr-only">
+                <span class="material-symbols-outlined text-[24px] text-primary">domain</span>
+                <span class="text-[11px] font-bold text-primary">Commercial Gym</span>
+                <span class="text-[8px] text-secondary">Barbells, cables &amp; machines</span>
+              </label>
+
+              <label class="flex flex-col items-center gap-1.5 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-center">
+                <input type="radio" name="ob-workout-loc" value="home" class="sr-only">
+                <span class="material-symbols-outlined text-[24px] text-primary">home</span>
+                <span class="text-[11px] font-bold text-primary">Home Only</span>
+                <span class="text-[8px] text-secondary">Bodyweight &amp; compact gear</span>
+              </label>
+
+              <label class="flex flex-col items-center gap-1.5 p-3 border border-surface-container-highest rounded-xl cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-center">
+                <input type="radio" name="ob-workout-loc" value="both" checked class="sr-only">
+                <span class="material-symbols-outlined text-[24px] text-primary">sync_alt</span>
+                <span class="text-[11px] font-bold text-primary">Both / Hybrid</span>
+                <span class="text-[8px] text-secondary">Flexible anywhere</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Fitness Experience Level</label>
+              <select id="ob-level" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none focus:border-primary transition">
+                <option value="beginner" selected>Beginner (&lt; 6 months consistent training)</option>
+                <option value="intermediate">Intermediate (6 months to 2 years)</option>
+                <option value="advanced">Advanced (2+ years dedicated lifting/athletics)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Health Considerations / Injuries (optional)</label>
+              <input id="ob-health" type="text" placeholder="e.g. Lower back stiffness, knee pain, PCOS, hypertension" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2.5 rounded-lg outline-none placeholder:text-secondary focus:border-primary transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1.5">Equipment You Have Access To (check all that apply)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Dumbbells" class="accent-primary" checked>
+                <span>Dumbbells</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Resistance bands" class="accent-primary" checked>
+                <span>Resistance Bands</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Barbell" class="accent-primary">
+                <span>Barbell &amp; Plates</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Pull-up bar" class="accent-primary">
+                <span>Pull-up Bar</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Kettlebell" class="accent-primary">
+                <span>Kettlebell</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border border-surface-container-highest rounded-lg cursor-pointer hover:border-primary transition has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-xs">
+                <input type="checkbox" name="ob-equip" value="Treadmill / Cardio" class="accent-primary">
+                <span>Cardio Machine</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: AI Computation & Personalised Plan -->
+        <div id="ob-step-4" class="space-y-4 hidden">
+          <!-- Loading animation -->
+          <div id="ob-loading-view" class="py-10 flex flex-col items-center justify-center text-center space-y-4">
+            <div class="relative w-16 h-16">
+              <div class="absolute inset-0 rounded-full border-4 border-surface-container-highest"></div>
+              <div class="absolute inset-0 rounded-full border-4 border-t-primary animate-spin"></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-[24px]">psychology</span>
+              </div>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-primary">Architecting Your Blueprint with Gemini AI...</div>
+              <div id="ob-loading-stage" class="text-[10px] text-secondary font-mono mt-1">Calculating Mifflin-St Jeor BMR &amp; Indian Macro Partitions...</div>
+            </div>
+          </div>
+
+          <!-- Result View -->
+          <div id="ob-result-view" class="space-y-4 hidden">
+            <!-- Calorie & BMI KPI Trio -->
+            <div class="grid grid-cols-3 gap-2">
+              <div class="p-3 bg-surface-container-low border border-surface-container-highest rounded-xl text-center">
+                <div class="text-[9px] text-secondary uppercase font-bold tracking-wider">Your BMI</div>
+                <div id="ob-res-bmi-val" class="text-xl font-bold font-mono text-primary mt-0.5">--</div>
+                <div id="ob-res-bmi-badge" class="inline-block mt-0.5 px-2 py-0.5 text-[8px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-500">Normal</div>
+              </div>
+
+              <div class="p-3 bg-surface-container-low border border-surface-container-highest rounded-xl text-center">
+                <div class="text-[9px] text-secondary uppercase font-bold tracking-wider">Maintenance TDEE</div>
+                <div id="ob-res-tdee-val" class="text-xl font-bold font-mono text-primary mt-0.5">--</div>
+                <div class="text-[8px] text-secondary font-mono">kcal / day</div>
+              </div>
+
+              <div class="p-3 bg-primary/10 border border-primary rounded-xl text-center">
+                <div class="text-[9px] text-primary uppercase font-bold tracking-wider">Target Calories</div>
+                <div id="ob-res-target-val" class="text-xl font-bold font-mono text-primary mt-0.5">--</div>
+                <div class="text-[8px] text-primary/80 font-mono">kcal / day</div>
+              </div>
+            </div>
+
+            <!-- Target Macro Split -->
+            <div class="p-3 bg-surface-container-low border border-surface-container-highest rounded-xl space-y-2">
+              <div class="flex items-center justify-between text-[10px] font-mono text-secondary uppercase font-bold">
+                <span>Daily Macronutrient Target</span>
+                <span id="ob-res-bmr-note" class="text-[9px] font-normal lowercase">BMR: -- kcal</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div class="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
+                  <div class="text-[9px] text-blue-500 uppercase font-bold">Protein</div>
+                  <div id="ob-res-protein" class="text-sm font-bold font-mono text-primary mt-0.5">--g</div>
+                </div>
+                <div class="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
+                  <div class="text-[9px] text-yellow-500 uppercase font-bold">Carbs</div>
+                  <div id="ob-res-carbs" class="text-sm font-bold font-mono text-primary mt-0.5">--g</div>
+                </div>
+                <div class="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
+                  <div class="text-[9px] text-red-500 uppercase font-bold">Fats</div>
+                  <div id="ob-res-fats" class="text-sm font-bold font-mono text-primary mt-0.5">--g</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Matched Workout Plan from Database -->
+            <div class="p-3.5 bg-surface-container border border-surface-container-highest rounded-xl flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">fitness_center</span>
+                </div>
+                <div>
+                  <div class="text-[9px] text-secondary uppercase font-bold tracking-wider">Matched Program from Database</div>
+                  <div id="ob-res-plan-name" class="font-bold text-xs text-primary leading-tight">--</div>
+                  <div id="ob-res-plan-meta" class="text-[9px] text-secondary font-mono mt-0.5">-- days/week · -- min/session</div>
+                </div>
+              </div>
+              <button onclick="viewMatchedPlanInStudio()" class="px-3 py-1.5 bg-surface-container-highest hover:bg-neutral-800 text-primary hover:text-white rounded-lg text-[10px] font-bold uppercase transition shrink-0">
+                View Studio →
+              </button>
+            </div>
+
+            <!-- Gemini AI Generated Plan & Recommendations -->
+            <div class="border border-surface-container-highest rounded-xl overflow-hidden">
+              <div class="p-3 bg-surface-container-low border-b border-surface-container-highest flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[16px]">psychology</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Gemini AI Personalized Routine &amp; Guidance</span>
+              </div>
+              <div id="ob-res-ai-plan" class="p-4 text-xs font-mono text-primary leading-relaxed max-h-64 overflow-y-auto whitespace-pre-wrap bg-surface-container-lowest">
+                Generating blueprint...
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div class="p-4 bg-surface-container-low border-t border-surface-container-highest flex items-center justify-between shrink-0">
+        <button id="ob-btn-back" onclick="obStepPrev()" class="h-9 px-4 border border-surface-container-highest text-secondary hover:text-primary text-xs font-bold uppercase rounded-lg hidden transition">
+          ← Back
+        </button>
+        <div id="ob-btn-back-spacer"></div>
+
+        <button id="ob-btn-next" onclick="obStepNext()" class="h-9 px-5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-neutral-800 transition flex items-center gap-1.5">
+          <span>Continue</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </button>
+
+        <button id="ob-btn-finish" onclick="finishOnboarding()" class="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center gap-1.5 hidden shadow-sm">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span>
+          <span>Apply Plan &amp; Start</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ==================== MODAL: WORKOUT LOG ENTRY ==================== -->
   <div id="workoutLogModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
@@ -8115,7 +8491,288 @@ INSTRUCTIONS:
         errEl.classList.remove('hidden');
       }
     }
-    // ==================== END WORKOUT STUDIO ====================
+    // ==================== ONBOARDING & SIGNUP FLOW ====================
+    let obCurrentStep = 1;
+    let obLastResult = null;
+    let obLoadingInterval = null;
+
+    function updateLiveObBmi() {
+      const hCm = parseFloat(document.getElementById('ob-height')?.value) || 0;
+      const wKg = parseFloat(document.getElementById('ob-weight')?.value) || 0;
+      const numEl = document.getElementById('ob-bmi-num');
+      const badgeEl = document.getElementById('ob-bmi-badge');
+      if (!numEl || !badgeEl) return;
+
+      if (hCm > 80 && wKg > 20) {
+        const hM = hCm / 100;
+        const bmi = +(wKg / (hM * hM)).toFixed(1);
+        numEl.textContent = bmi;
+
+        // Asian Indian WHO Cutoffs: <18.5 Underweight, 18.5-22.9 Healthy, 23.0-24.9 Overweight, >=25.0 Obese
+        if (bmi < 18.5) {
+          badgeEl.textContent = 'Underweight';
+          badgeEl.className = 'ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-500/10 text-blue-500';
+        } else if (bmi <= 22.9) {
+          badgeEl.textContent = 'Healthy';
+          badgeEl.className = 'ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/10 text-emerald-500';
+        } else if (bmi <= 24.9) {
+          badgeEl.textContent = 'Overweight';
+          badgeEl.className = 'ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-yellow-500/10 text-yellow-500';
+        } else {
+          badgeEl.textContent = 'Obese';
+          badgeEl.className = 'ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-red-500/10 text-red-500';
+        }
+      } else {
+        numEl.textContent = '--';
+        badgeEl.textContent = 'Enter Height & Weight';
+        badgeEl.className = 'ml-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-surface-container text-secondary';
+      }
+    }
+
+    function openOnboardingModal() {
+      obCurrentStep = 1;
+      obShowStep(1);
+      updateLiveObBmi();
+      document.getElementById('onboardingModal')?.classList.remove('hidden');
+    }
+
+    function skipOnboarding() {
+      document.getElementById('onboardingModal')?.classList.add('hidden');
+    }
+
+    function obShowStep(step) {
+      obCurrentStep = step;
+      [1, 2, 3, 4].forEach(s => {
+        const el = document.getElementById('ob-step-' + s);
+        const dot = document.getElementById('ob-step-dot-' + s);
+        if (el) el.classList.toggle('hidden', s !== step);
+        if (dot) {
+          if (s <= step) {
+            dot.className = 'h-1.5 flex-1 bg-primary rounded-full transition-all duration-300';
+          } else {
+            dot.className = 'h-1.5 flex-1 bg-surface-container-highest rounded-full transition-all duration-300';
+          }
+        }
+      });
+
+      const labelEl = document.getElementById('ob-step-label');
+      const numEl = document.getElementById('ob-step-num');
+      const backBtn = document.getElementById('ob-btn-back');
+      const nextBtn = document.getElementById('ob-btn-next');
+      const finishBtn = document.getElementById('ob-btn-finish');
+      const spacer = document.getElementById('ob-btn-back-spacer');
+
+      if (numEl) numEl.textContent = step + ' / 4';
+      if (backBtn && spacer) {
+        if (step === 1 || step === 4) {
+          backBtn.classList.add('hidden');
+          spacer.classList.remove('hidden');
+        } else {
+          backBtn.classList.remove('hidden');
+          spacer.classList.add('hidden');
+        }
+      }
+
+      if (step === 1 && labelEl) labelEl.textContent = 'Step 1 of 4 — Body Metrics & BMI';
+      if (step === 2 && labelEl) labelEl.textContent = 'Step 2 of 4 — Goals & Nutrition';
+      if (step === 3 && labelEl) labelEl.textContent = 'Step 3 of 4 — Workout Equipment & Routine';
+      if (step === 4 && labelEl) labelEl.textContent = 'Step 4 of 4 — Gemini AI Plan Synthesis';
+
+      if (nextBtn) nextBtn.classList.toggle('hidden', step === 4);
+      if (finishBtn) finishBtn.classList.add('hidden'); // Only visible after AI generates plan
+    }
+
+    function obStepPrev() {
+      if (obCurrentStep > 1 && obCurrentStep < 4) {
+        obShowStep(obCurrentStep - 1);
+      }
+    }
+
+    function obStepNext() {
+      if (obCurrentStep === 1) {
+        const h = parseFloat(document.getElementById('ob-height')?.value);
+        const w = parseFloat(document.getElementById('ob-weight')?.value);
+        if (!h || h < 100 || !w || w < 25) {
+          alert('Please enter a valid height and weight to calculate your BMI.');
+          return;
+        }
+        obShowStep(2);
+      } else if (obCurrentStep === 2) {
+        obShowStep(3);
+      } else if (obCurrentStep === 3) {
+        obShowStep(4);
+        executeOnboardingPlanGeneration();
+      }
+    }
+
+    async function executeOnboardingPlanGeneration() {
+      const loadingView = document.getElementById('ob-loading-view');
+      const resultView = document.getElementById('ob-result-view');
+      const stageEl = document.getElementById('ob-loading-stage');
+      const finishBtn = document.getElementById('ob-btn-finish');
+      const nextBtn = document.getElementById('ob-btn-next');
+
+      if (loadingView) loadingView.classList.remove('hidden');
+      if (resultView) resultView.classList.add('hidden');
+      if (finishBtn) finishBtn.classList.add('hidden');
+      if (nextBtn) nextBtn.classList.add('hidden');
+
+      const stages = [
+        'Calculating Mifflin-St Jeor BMR & Asian Indian BMI...',
+        'Matching workout splits in CaloriQ 55-Exercise Database...',
+        'Synthesising personalised weekly schedule with Gemini AI...',
+        'Partitioning Asian Indian macro goals (Carbs, Protein, Fats)...'
+      ];
+      let stageIdx = 0;
+      clearInterval(obLoadingInterval);
+      obLoadingInterval = setInterval(() => {
+        stageIdx = (stageIdx + 1) % stages.length;
+        if (stageEl) stageEl.textContent = stages[stageIdx];
+      }, 1500);
+
+      // Collect data
+      const equipChecked = Array.from(document.querySelectorAll('input[name="ob-equip"]:checked')).map(el => el.value);
+      const goalRadio = document.querySelector('input[name="ob-primary-goal"]:checked');
+      const locRadio = document.querySelector('input[name="ob-workout-loc"]:checked');
+
+      const payload = {
+        name: document.getElementById('ob-name')?.value?.trim() || 'Health Champion',
+        age: parseInt(document.getElementById('ob-age')?.value) || 26,
+        sex: document.getElementById('ob-sex')?.value || 'male',
+        heightCm: parseFloat(document.getElementById('ob-height')?.value) || 172,
+        weightKg: parseFloat(document.getElementById('ob-weight')?.value) || 70,
+        primaryGoal: goalRadio ? goalRadio.value : 'lose_weight',
+        activityLevel: document.getElementById('ob-activity')?.value || 'moderate',
+        dietaryPref: document.getElementById('ob-diet')?.value || 'vegetarian',
+        workoutLocation: locRadio ? locRadio.value : 'both',
+        fitnessLevel: document.getElementById('ob-level')?.value || 'beginner',
+        healthConditions: document.getElementById('ob-health')?.value?.trim() || '',
+        equipment: equipChecked
+      };
+
+      try {
+        const res = await fetch('/api/onboarding/generate-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        clearInterval(obLoadingInterval);
+
+        if (!res.ok) {
+          throw new Error('Server returned ' + res.status);
+        }
+
+        const data = await res.json();
+        obLastResult = data;
+
+        // Render Result View
+        if (loadingView) loadingView.classList.add('hidden');
+        if (resultView) resultView.classList.remove('hidden');
+        if (finishBtn) finishBtn.classList.remove('hidden');
+
+        // Populate KPIs
+        document.getElementById('ob-res-bmi-val').textContent = data.bmi || '--';
+        const resBadge = document.getElementById('ob-res-bmi-badge');
+        if (resBadge) {
+          resBadge.textContent = data.bmiCategory || 'Normal';
+          if (data.bmiCategory === 'Healthy') {
+            resBadge.className = 'inline-block mt-0.5 px-2 py-0.5 text-[8px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-500';
+          } else if (data.bmiCategory === 'Overweight') {
+            resBadge.className = 'inline-block mt-0.5 px-2 py-0.5 text-[8px] font-bold uppercase rounded bg-yellow-500/10 text-yellow-500';
+          } else if (data.bmiCategory === 'Obese') {
+            resBadge.className = 'inline-block mt-0.5 px-2 py-0.5 text-[8px] font-bold uppercase rounded bg-red-500/10 text-red-500';
+          } else {
+            resBadge.className = 'inline-block mt-0.5 px-2 py-0.5 text-[8px] font-bold uppercase rounded bg-blue-500/10 text-blue-500';
+          }
+        }
+
+        document.getElementById('ob-res-tdee-val').textContent = data.tdee?.toLocaleString() || '--';
+        document.getElementById('ob-res-target-val').textContent = data.dailyCalorieTarget?.toLocaleString() || '--';
+        document.getElementById('ob-res-bmr-note').textContent = `bmr: ${data.bmr} kcal`;
+
+        document.getElementById('ob-res-protein').textContent = (data.macros?.protein || '--') + 'g';
+        document.getElementById('ob-res-carbs').textContent = (data.macros?.carbs || '--') + 'g';
+        document.getElementById('ob-res-fats').textContent = (data.macros?.fat || '--') + 'g';
+
+        if (data.recommendedPlan) {
+          document.getElementById('ob-res-plan-name').textContent = data.recommendedPlan.name || 'Custom Fitness Program';
+          document.getElementById('ob-res-plan-meta').textContent = `${data.recommendedPlan.daysPerWeek || 3} days/wk · ${data.recommendedPlan.sessionMin || 45} min/session · ${data.recommendedPlan.level || 'all levels'}`;
+        }
+
+        const aiPlanEl = document.getElementById('ob-res-ai-plan');
+        if (aiPlanEl) {
+          aiPlanEl.textContent = data.aiPlan || 'Plan generated successfully.';
+        }
+
+      } catch (err) {
+        clearInterval(obLoadingInterval);
+        console.error('Onboarding Generation Error:', err);
+        if (loadingView) loadingView.classList.add('hidden');
+        if (resultView) resultView.classList.remove('hidden');
+        if (finishBtn) finishBtn.classList.remove('hidden');
+
+        document.getElementById('ob-res-bmi-val').textContent = (payload.weightKg / Math.pow(payload.heightCm/100, 2)).toFixed(1);
+        document.getElementById('ob-res-tdee-val').textContent = '2,100';
+        document.getElementById('ob-res-target-val').textContent = '1,650';
+        document.getElementById('ob-res-protein').textContent = '120g';
+        document.getElementById('ob-res-carbs').textContent = '175g';
+        document.getElementById('ob-res-fats').textContent = '52g';
+        document.getElementById('ob-res-plan-name').textContent = 'Gym Push/Pull/Legs Split';
+        document.getElementById('ob-res-plan-meta').textContent = '3 days/week · 65 min/session · Intermediate';
+        document.getElementById('ob-res-ai-plan').textContent = 'Welcome! Your metabolic baseline is configured at 1,650 kcal daily target with 120g protein. Your matched routine has been loaded into Workout Studio.';
+      }
+    }
+
+    function viewMatchedPlanInStudio() {
+      skipOnboarding();
+      switchTab('workout');
+      if (obLastResult?.recommendedPlan?.id) {
+        openPlanDetail(obLastResult.recommendedPlan.id);
+      }
+    }
+
+    async function finishOnboarding() {
+      skipOnboarding();
+      // Reload profile to refresh all status cards, calories, and goals across the app
+      if (typeof loadProfile === 'function') loadProfile();
+      if (typeof loadEntries === 'function') loadEntries();
+      if (typeof loadWorkoutTab === 'function') loadWorkoutTab();
+
+      // Show toast notification
+      const banner = document.createElement('div');
+      banner.className = 'fixed bottom-20 md:bottom-6 right-6 z-50 bg-primary text-on-primary px-4 py-3 rounded-xl shadow-2xl font-mono text-xs flex items-center gap-2 animate-bounce';
+      banner.innerHTML = `<span class="material-symbols-outlined text-emerald-400 text-[18px]">verified</span><span>Personalised AI Blueprint Activated! Targets synchronized.</span>`;
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 4500);
+    }
+
+    async function checkAutoOnboarding() {
+      try {
+        const res = await fetch('/api/onboarding/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.done) {
+            // First time user! Auto launch onboarding modal smoothly
+            setTimeout(() => {
+              openOnboardingModal();
+            }, 800);
+          }
+        }
+      } catch (e) {
+        console.warn('Onboarding status check skipped:', e);
+      }
+    }
+
+    // Hook auto onboarding on load
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAutoOnboarding();
+    });
+    // Check also if DOM is already loaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      checkAutoOnboarding();
+    }
+    // ==================== END ONBOARDING ====================
 
   </script>
 

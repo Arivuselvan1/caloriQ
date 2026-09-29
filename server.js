@@ -190,6 +190,8 @@ function saveConfigToFile() {
 let foodEntries = [];
 
 let userProfile = {
+  name: null,
+  onboardingDone: false,
   age: 28,
   sex: 'female',
   heightCm: 168,
@@ -197,6 +199,11 @@ let userProfile = {
   activityLevel: 'moderate',
   goal: 'lose',
   targetRateKgPerWeek: 0.5,
+  workoutLocation: 'both',
+  fitnessLevel: 'beginner',
+  equipment: [],
+  dietaryPref: 'vegetarian',
+  healthConditions: '',
   bmr: 1419,
   tdee: 2200,
   dailyCalorieTarget: 1650,
@@ -5558,6 +5565,202 @@ async function requestHandler(req, res) {
         res.end(JSON.stringify({ reply: offlineReply }));
       }
     });
+    return;
+  }
+
+  // POST /api/onboarding/generate-plan
+  // Accepts user signup data, saves to userProfile, recalculates TDEE, then calls Gemini to generate a personalized workout plan
+  if (pathname === '/api/onboarding/generate-plan' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        const {
+          name, age, sex, heightCm, weightKg, activityLevel,
+          primaryGoal, workoutLocation, fitnessLevel,
+          equipment, dietaryPref, healthConditions
+        } = data;
+
+        // --- 1. Save to userProfile ---
+        userProfile.name = name || userProfile.name;
+        userProfile.age = parseInt(age) || userProfile.age;
+        userProfile.sex = sex || userProfile.sex;
+        userProfile.heightCm = parseFloat(heightCm) || userProfile.heightCm;
+        userProfile.weightKg = parseFloat(weightKg) || userProfile.weightKg;
+        userProfile.activityLevel = activityLevel || userProfile.activityLevel;
+        userProfile.workoutLocation = workoutLocation || 'both';
+        userProfile.fitnessLevel = fitnessLevel || 'beginner';
+        userProfile.equipment = equipment || [];
+        userProfile.dietaryPref = dietaryPref || 'vegetarian';
+        userProfile.healthConditions = healthConditions || '';
+        userProfile.onboardingDone = true;
+
+        // Map primaryGoal to existing goal system
+        const goalMap = {
+          lose_weight: 'lose',
+          gain_muscle: 'gain',
+          general_fitness: 'maintain',
+          endurance: 'maintain',
+          recovery: 'maintain'
+        };
+        userProfile.goal = goalMap[primaryGoal] || 'maintain';
+        userProfile.targetRateKgPerWeek = primaryGoal === 'lose_weight' ? 0.5 : primaryGoal === 'gain_muscle' ? 0.3 : 0;
+
+        // --- 2. Recalculate BMI, BMR, TDEE ---
+        const heightM = userProfile.heightCm / 100;
+        const bmi = +(userProfile.weightKg / (heightM * heightM)).toFixed(1);
+        const bmiCategory = bmi < 18.5 ? 'Underweight' : bmi < 23 ? 'Healthy' : bmi < 25 ? 'Overweight' : 'Obese';
+
+        recalculateProfile();
+
+        // --- 3. Find best matching workout plan ---
+        const workoutGoalMap = {
+          lose_weight: 'fat_loss',
+          gain_muscle: 'muscle_gain',
+          general_fitness: 'general_fitness',
+          endurance: 'endurance',
+          recovery: 'recovery'
+        };
+        const wGoal = workoutGoalMap[primaryGoal] || 'general_fitness';
+        const wLoc  = workoutLocation || 'both';
+        const wLvl  = fitnessLevel || 'beginner';
+
+        // Find best plan: exact match → relax level → relax location
+        let recommendedPlan = WORKOUT_PLANS.find(p =>
+          p.goal === wGoal && (p.location === wLoc || p.location === 'both') && p.level === wLvl
+        ) || WORKOUT_PLANS.find(p =>
+          p.goal === wGoal && (p.location === wLoc || p.location === 'both')
+        ) || WORKOUT_PLANS.find(p => p.goal === wGoal)
+          || WORKOUT_PLANS[0];
+
+        // Enrich plan with exercises
+        const planDays = PLAN_DAYS.filter(d => d.planId === recommendedPlan.id).map(d => ({
+          ...d,
+          exercises: PLAN_DAY_EXERCISES
+            .filter(e => e.dayId === d.id)
+            .sort((a, b) => a.sort - b.sort)
+            .map(pde => {
+              const ex = EXERCISES_DB.find(e => e.id === pde.exId);
+              const muscle = MUSCLE_GROUPS.find(m => m.id === ex?.muscleId);
+              return { name: ex?.name, muscle: muscle?.name, sets: pde.sets, reps: pde.reps, duration: pde.dur, rest: pde.rest, category: ex?.category };
+            })
+        }));
+
+        // --- 4. Build Gemini prompt for personalized plan ---
+        const equipList = Array.isArray(equipment) && equipment.length ? equipment.join(', ') : 'bodyweight only';
+        const geminiPrompt = `You are a certified fitness coach and nutritionist. Create a detailed, personalized weekly workout and wellness plan for this user.
+
+USER PROFILE:
+- Name: ${name || 'User'}, Age: ${age}, Sex: ${sex}
+- Height: ${heightCm} cm, Weight: ${weightKg} kg
+- BMI: ${bmi} (${bmiCategory} by Asian Indian standards)
+- Maintenance Calories (TDEE): ${userProfile.tdee} kcal/day
+- Daily Target: ${userProfile.dailyCalorieTarget} kcal/day
+- Primary Goal: ${primaryGoal?.replace(/_/g, ' ')}
+- Activity Level: ${activityLevel}
+- Workout Location: ${workoutLocation}
+- Fitness Level: ${fitnessLevel}
+- Available Equipment: ${equipList}
+- Dietary Preference: ${dietaryPref}
+- Health Conditions/Notes: ${healthConditions || 'None'}
+
+MATCHED WORKOUT PLAN FROM DATABASE: "${recommendedPlan.name}"
+- Goal: ${recommendedPlan.goal}, ${recommendedPlan.daysPerWeek} days/week, ${recommendedPlan.sessionMin} min/session
+- Training Days:
+${planDays.map(d => `  Day ${d.dayNum} (${d.dayName}): ${(d.exercises||[]).slice(0,4).map(e => e.name).join(', ')}${d.exercises?.length > 4 ? ` +${d.exercises.length-4} more` : ''}`).join('\n')}
+
+INSTRUCTIONS:
+1. Write a warm, encouraging 2-sentence welcome message addressing the user by name.
+2. Confirm their BMI and what it means for them specifically.
+3. Explain their calorie target: maintenance (${userProfile.tdee} kcal), daily target (${userProfile.dailyCalorieTarget} kcal), and why.
+4. Endorse the matched workout plan by name and explain why it suits their goal, location, and fitness level.
+5. Give a brief 7-day weekly schedule (Mon–Sun) using days from the plan above, including rest days.
+6. Add 3 personalized diet tips for their goal and dietary preference (${dietaryPref}).
+7. Give 2 motivational tips specific to their health conditions (${healthConditions || 'general fitness'}).
+
+Format with clear headings using **bold** and bullet points. Keep it under 500 words. Be warm, specific, and actionable.`;
+
+        const activeKey = userConfig.geminiApiKey;
+        let aiPlan = '';
+        if (activeKey) {
+          try {
+            const postData = JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: geminiPrompt }] }]
+            });
+            for (const model of GEMINI_MODELS) {
+              try {
+                const text = await new Promise((resolve, reject) => {
+                  const options = {
+                    hostname: 'generativelanguage.googleapis.com',
+                    port: 443,
+                    path: `/v1beta/models/${model}:generateContent?key=${activeKey}`,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) },
+                    timeout: 40000
+                  };
+                  const hreq = https.request(options, (hres) => {
+                    let b = '';
+                    hres.on('data', c => b += c);
+                    hres.on('end', () => {
+                      try {
+                        const parsed = JSON.parse(b);
+                        if (parsed.error) return reject(new Error(parsed.error.message));
+                        const t = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (!t) return reject(new Error('Empty response'));
+                        resolve(t);
+                      } catch(e) { reject(e); }
+                    });
+                  });
+                  hreq.on('error', reject);
+                  hreq.write(postData);
+                  hreq.end();
+                });
+                aiPlan = text;
+                break;
+              } catch(err) {
+                if (err.message.includes('API key not valid')) break;
+              }
+            }
+          } catch(e) {
+            console.error('[Onboarding] Gemini plan error:', e.message);
+          }
+        }
+
+        // Fallback plan if Gemini fails
+        if (!aiPlan) {
+          aiPlan = `## Welcome, ${name || 'User'}! 🎉\n\nYour profile is set up. Here's your personalised plan:\n\n**BMI:** ${bmi} (${bmiCategory})\n**Calorie Target:** ${userProfile.dailyCalorieTarget} kcal/day\n**Recommended Plan:** ${recommendedPlan.name}\n\nStart with the **${planDays[0]?.dayName || 'Day 1'}** workout and build from there. Ria AI is here to guide you every step of the way!`;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          bmi,
+          bmiCategory,
+          bmr: userProfile.bmr,
+          tdee: userProfile.tdee,
+          dailyCalorieTarget: userProfile.dailyCalorieTarget,
+          macros: { protein: userProfile.proteinTargetG, carbs: userProfile.carbsTargetG, fat: userProfile.fatTargetG },
+          recommendedPlan: { ...recommendedPlan, days: planDays },
+          aiPlan,
+          profile: userProfile
+        }));
+      } catch (err) {
+        console.error('[Onboarding] Error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // GET /api/onboarding/status — check if onboarding is completed
+  if (pathname === '/api/onboarding/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      done: !!userProfile.onboardingDone,
+      name: userProfile.name || null
+    }));
     return;
   }
 
