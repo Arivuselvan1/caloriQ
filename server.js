@@ -748,6 +748,194 @@ Output strict JSON:
   });
 }
 
+// =====================================================================
+// WORKOUT DATABASE (in-memory, from SQLite schema)
+// =====================================================================
+const MUSCLE_GROUPS = [
+  {id:1,name:'Chest'},{id:2,name:'Back'},{id:3,name:'Shoulders'},
+  {id:4,name:'Biceps'},{id:5,name:'Triceps'},{id:6,name:'Quads'},
+  {id:7,name:'Hamstrings & Glutes'},{id:8,name:'Calves'},{id:9,name:'Core'},
+  {id:10,name:'Full Body'},{id:11,name:'Cardiovascular'}
+];
+
+const EQUIPMENT_LIST = [
+  {id:1,name:'None (bodyweight)',needsGym:false},
+  {id:2,name:'Barbell',needsGym:true},
+  {id:3,name:'Dumbbells',needsGym:false},
+  {id:4,name:'Cable machine',needsGym:true},
+  {id:5,name:'Treadmill',needsGym:true},
+  {id:6,name:'Stationary bike',needsGym:true},
+  {id:7,name:'Rowing machine',needsGym:true},
+  {id:8,name:'Leg press machine',needsGym:true},
+  {id:9,name:'Pull-up bar',needsGym:false},
+  {id:10,name:'Resistance band',needsGym:false},
+  {id:11,name:'Jump rope',needsGym:false},
+  {id:12,name:'Bench',needsGym:true},
+  {id:13,name:'Kettlebell',needsGym:false},
+  {id:14,name:'Elliptical',needsGym:true},
+  {id:15,name:'Lat pulldown machine',needsGym:true}
+];
+
+// [id, name, category, muscleId, equipId, location, difficulty, isCompound, kcalPerMin]
+const EXERCISES_DB = [
+  {id:1,name:'Barbell Bench Press',category:'strength',muscleId:1,equipId:2,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:6},
+  {id:2,name:'Incline Dumbbell Press',category:'strength',muscleId:1,equipId:3,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:5},
+  {id:3,name:'Cable Chest Fly',category:'strength',muscleId:1,equipId:4,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:4,name:'Barbell Back Squat',category:'strength',muscleId:6,equipId:2,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:8},
+  {id:5,name:'Leg Press',category:'strength',muscleId:6,equipId:8,location:'gym',difficulty:'beginner',isCompound:true,kcalPerMin:6},
+  {id:6,name:'Romanian Deadlift',category:'strength',muscleId:7,equipId:2,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:7},
+  {id:7,name:'Conventional Deadlift',category:'strength',muscleId:2,equipId:2,location:'gym',difficulty:'advanced',isCompound:true,kcalPerMin:8},
+  {id:8,name:'Lat Pulldown',category:'strength',muscleId:2,equipId:15,location:'gym',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:9,name:'Seated Cable Row',category:'strength',muscleId:2,equipId:4,location:'gym',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:10,name:'Barbell Overhead Press',category:'strength',muscleId:3,equipId:2,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:6},
+  {id:11,name:'Dumbbell Lateral Raise',category:'strength',muscleId:3,equipId:3,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:3},
+  {id:12,name:'Barbell Curl',category:'strength',muscleId:4,equipId:2,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:13,name:'Triceps Rope Pushdown',category:'strength',muscleId:5,equipId:4,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:14,name:'Barbell Hip Thrust',category:'strength',muscleId:7,equipId:2,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:6},
+  {id:15,name:'Standing Calf Raise',category:'strength',muscleId:8,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:3},
+  {id:16,name:'Pull-Up',category:'strength',muscleId:2,equipId:9,location:'both',difficulty:'advanced',isCompound:true,kcalPerMin:7},
+  {id:17,name:'Dumbbell Bench Press',category:'strength',muscleId:1,equipId:3,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:18,name:'Push-Up',category:'strength',muscleId:1,equipId:1,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:6},
+  {id:19,name:'Bodyweight Squat',category:'strength',muscleId:6,equipId:1,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:20,name:'Walking Lunges',category:'strength',muscleId:6,equipId:1,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:6},
+  {id:21,name:'Glute Bridge',category:'strength',muscleId:7,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:22,name:'Plank',category:'core',muscleId:9,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:23,name:'Bicycle Crunch',category:'core',muscleId:9,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:5},
+  {id:24,name:'Mountain Climbers',category:'hiit',muscleId:9,equipId:1,location:'both',difficulty:'intermediate',isCompound:false,kcalPerMin:10},
+  {id:25,name:'Burpees',category:'hiit',muscleId:10,equipId:1,location:'both',difficulty:'intermediate',isCompound:true,kcalPerMin:12},
+  {id:26,name:'Pike Push-Up',category:'strength',muscleId:3,equipId:1,location:'both',difficulty:'intermediate',isCompound:true,kcalPerMin:6},
+  {id:27,name:'Chair Dips',category:'strength',muscleId:5,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:5},
+  {id:28,name:'Superman Hold',category:'strength',muscleId:2,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:3},
+  {id:29,name:'Jump Squats',category:'hiit',muscleId:6,equipId:1,location:'both',difficulty:'intermediate',isCompound:true,kcalPerMin:11},
+  {id:30,name:'Diamond Push-Up',category:'strength',muscleId:5,equipId:1,location:'both',difficulty:'intermediate',isCompound:false,kcalPerMin:6},
+  {id:31,name:'Bulgarian Split Squat',category:'strength',muscleId:6,equipId:1,location:'both',difficulty:'intermediate',isCompound:true,kcalPerMin:7},
+  {id:32,name:'Lying Leg Raises',category:'core',muscleId:9,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:33,name:'Resistance Band Row',category:'strength',muscleId:2,equipId:10,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:4},
+  {id:34,name:'Dumbbell Goblet Squat',category:'strength',muscleId:6,equipId:3,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:6},
+  {id:35,name:'Dumbbell Shoulder Press',category:'strength',muscleId:3,equipId:3,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:36,name:'Dumbbell Bent-Over Row',category:'strength',muscleId:2,equipId:3,location:'both',difficulty:'beginner',isCompound:true,kcalPerMin:5},
+  {id:37,name:'Dumbbell Hammer Curl',category:'strength',muscleId:4,equipId:3,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:38,name:'Overhead Triceps Extension',category:'strength',muscleId:5,equipId:3,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:4},
+  {id:39,name:'Kettlebell Swing',category:'hiit',muscleId:10,equipId:13,location:'both',difficulty:'intermediate',isCompound:true,kcalPerMin:11},
+  {id:40,name:'Band Pull-Apart',category:'strength',muscleId:3,equipId:10,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:3},
+  {id:41,name:'Treadmill Run',category:'cardio',muscleId:11,equipId:5,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:10},
+  {id:42,name:'Stationary Bike',category:'cardio',muscleId:11,equipId:6,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:8},
+  {id:43,name:'Rowing Machine',category:'cardio',muscleId:11,equipId:7,location:'gym',difficulty:'intermediate',isCompound:true,kcalPerMin:10},
+  {id:44,name:'Elliptical',category:'cardio',muscleId:11,equipId:14,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:8},
+  {id:45,name:'Outdoor Jog',category:'cardio',muscleId:11,equipId:1,location:'home',difficulty:'beginner',isCompound:false,kcalPerMin:10},
+  {id:46,name:'Brisk Walk',category:'cardio',muscleId:11,equipId:1,location:'home',difficulty:'beginner',isCompound:false,kcalPerMin:5},
+  {id:47,name:'Jump Rope',category:'cardio',muscleId:11,equipId:11,location:'both',difficulty:'intermediate',isCompound:false,kcalPerMin:12},
+  {id:48,name:'High Knees',category:'cardio',muscleId:11,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:9},
+  {id:49,name:'Jumping Jacks',category:'cardio',muscleId:11,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:8},
+  {id:50,name:'Stair Climbing',category:'cardio',muscleId:11,equipId:1,location:'home',difficulty:'intermediate',isCompound:false,kcalPerMin:9},
+  {id:51,name:'Treadmill Incline Walk',category:'cardio',muscleId:11,equipId:5,location:'gym',difficulty:'beginner',isCompound:false,kcalPerMin:7},
+  {id:52,name:'Cat-Cow Stretch',category:'mobility',muscleId:2,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:2},
+  {id:53,name:'Hip Flexor Stretch',category:'mobility',muscleId:6,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:2},
+  {id:54,name:"Child's Pose",category:'mobility',muscleId:2,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:2},
+  {id:55,name:'Hamstring Stretch',category:'mobility',muscleId:7,equipId:1,location:'both',difficulty:'beginner',isCompound:false,kcalPerMin:2}
+];
+
+const WORKOUT_PLANS = [
+  {id:1,name:'Gym Push/Pull/Legs',goal:'muscle_gain',location:'gym',level:'intermediate',daysPerWeek:3,sessionMin:65,notes:'Run the 3-day cycle once, or twice for a 6-day split.'},
+  {id:2,name:'Gym Full Body Starter',goal:'general_fitness',location:'gym',level:'beginner',daysPerWeek:3,sessionMin:50,notes:'Alternate Full Body A and B with a rest day between.'},
+  {id:3,name:'Gym Upper/Lower Split',goal:'muscle_gain',location:'gym',level:'intermediate',daysPerWeek:4,sessionMin:60,notes:'Upper, Lower, rest, Upper, Lower.'},
+  {id:4,name:'Home Bodyweight Builder',goal:'general_fitness',location:'home',level:'beginner',daysPerWeek:3,sessionMin:40,notes:'No equipment needed at all.'},
+  {id:5,name:'Home Dumbbell + Band',goal:'muscle_gain',location:'home',level:'intermediate',daysPerWeek:4,sessionMin:50,notes:'Needs one pair of adjustable dumbbells and a resistance band.'},
+  {id:6,name:'No-Equipment HIIT Fat Burner',goal:'fat_loss',location:'home',level:'intermediate',daysPerWeek:4,sessionMin:30,notes:'Short, intense circuits. Rest 20 s between exercises.'},
+  {id:7,name:'Gym Cardio Fat Loss',goal:'fat_loss',location:'gym',level:'beginner',daysPerWeek:5,sessionMin:45,notes:'Mix of steady-state and intervals on cardio machines.'},
+  {id:8,name:'Outdoor Cardio Endurance',goal:'endurance',location:'home',level:'beginner',daysPerWeek:5,sessionMin:45,notes:'Jogging, rope and stairs. No gym required.'},
+  {id:9,name:'Mobility & Recovery',goal:'recovery',location:'both',level:'beginner',daysPerWeek:7,sessionMin:20,notes:'Daily light stretching, good on rest days.'}
+];
+
+const PLAN_DAYS = [
+  {id:1,planId:1,dayNum:1,dayName:'Push',focus:'Chest, shoulders, triceps'},
+  {id:2,planId:1,dayNum:2,dayName:'Pull',focus:'Back and biceps'},
+  {id:3,planId:1,dayNum:3,dayName:'Legs',focus:'Quads, hamstrings, glutes, calves'},
+  {id:4,planId:2,dayNum:1,dayName:'Full Body A',focus:'Squat, press, row'},
+  {id:5,planId:2,dayNum:2,dayName:'Full Body B',focus:'Leg press, pull, glutes'},
+  {id:6,planId:3,dayNum:1,dayName:'Upper',focus:'Chest, back, shoulders, arms'},
+  {id:7,planId:3,dayNum:2,dayName:'Lower',focus:'Legs and calves'},
+  {id:8,planId:4,dayNum:1,dayName:'Upper Push + Core',focus:'Chest, shoulders, triceps, abs'},
+  {id:9,planId:4,dayNum:2,dayName:'Lower Body',focus:'Legs and glutes'},
+  {id:10,planId:4,dayNum:3,dayName:'Full Body Circuit',focus:'Conditioning'},
+  {id:11,planId:5,dayNum:1,dayName:'Upper Body',focus:'Chest, back, shoulders, arms'},
+  {id:12,planId:5,dayNum:2,dayName:'Lower Body',focus:'Legs, glutes, core'},
+  {id:13,planId:6,dayNum:1,dayName:'HIIT Circuit A',focus:'Total body, 4 rounds'},
+  {id:14,planId:6,dayNum:2,dayName:'HIIT Circuit B',focus:'Total body, 4 rounds'},
+  {id:15,planId:7,dayNum:1,dayName:'Steady State',focus:'Low-moderate intensity'},
+  {id:16,planId:7,dayNum:2,dayName:'Intervals',focus:'High intensity intervals'},
+  {id:17,planId:7,dayNum:3,dayName:'Cardio + Core',focus:'Incline walk, rowing, abs'},
+  {id:18,planId:8,dayNum:1,dayName:'Jog Day',focus:'Easy aerobic run'},
+  {id:19,planId:8,dayNum:2,dayName:'Rope & Stairs',focus:'Skill and power cardio'},
+  {id:20,planId:8,dayNum:3,dayName:'Recovery Walk',focus:'Active recovery'},
+  {id:21,planId:9,dayNum:1,dayName:'Full Body Stretch',focus:'Mobility flow'}
+];
+
+// [dayId, exerciseId, sortOrder, sets, reps, durationSec, restSec]
+const PLAN_DAY_EXERCISES = [
+  // Day 1: Push
+  {dayId:1,exId:1,sort:1,sets:4,reps:'6-8',dur:null,rest:120},{dayId:1,exId:10,sort:2,sets:3,reps:'8-10',dur:null,rest:90},{dayId:1,exId:2,sort:3,sets:3,reps:'10-12',dur:null,rest:90},
+  {dayId:1,exId:11,sort:4,sets:3,reps:'12-15',dur:null,rest:60},{dayId:1,exId:13,sort:5,sets:3,reps:'10-12',dur:null,rest:60},{dayId:1,exId:3,sort:6,sets:3,reps:'12-15',dur:null,rest:60},
+  // Day 2: Pull
+  {dayId:2,exId:7,sort:1,sets:3,reps:'5',dur:null,rest:150},{dayId:2,exId:8,sort:2,sets:3,reps:'8-10',dur:null,rest:90},{dayId:2,exId:9,sort:3,sets:3,reps:'10-12',dur:null,rest:90},
+  {dayId:2,exId:16,sort:4,sets:3,reps:'AMRAP',dur:null,rest:90},{dayId:2,exId:12,sort:5,sets:3,reps:'10-12',dur:null,rest:60},{dayId:2,exId:37,sort:6,sets:3,reps:'12',dur:null,rest:60},
+  // Day 3: Legs
+  {dayId:3,exId:4,sort:1,sets:4,reps:'6-8',dur:null,rest:150},{dayId:3,exId:6,sort:2,sets:3,reps:'8-10',dur:null,rest:120},{dayId:3,exId:5,sort:3,sets:3,reps:'12',dur:null,rest:90},
+  {dayId:3,exId:14,sort:4,sets:3,reps:'10',dur:null,rest:90},{dayId:3,exId:15,sort:5,sets:4,reps:'15',dur:null,rest:45},{dayId:3,exId:22,sort:6,sets:3,reps:null,dur:60,rest:45},
+  // Day 4: Full Body A
+  {dayId:4,exId:4,sort:1,sets:3,reps:'8-10',dur:null,rest:90},{dayId:4,exId:17,sort:2,sets:3,reps:'10',dur:null,rest:90},{dayId:4,exId:9,sort:3,sets:3,reps:'10-12',dur:null,rest:90},
+  {dayId:4,exId:35,sort:4,sets:3,reps:'10',dur:null,rest:60},{dayId:4,exId:22,sort:5,sets:3,reps:null,dur:30,rest:30},
+  // Day 5: Full Body B
+  {dayId:5,exId:5,sort:1,sets:3,reps:'12',dur:null,rest:90},{dayId:5,exId:8,sort:2,sets:3,reps:'10',dur:null,rest:90},{dayId:5,exId:2,sort:3,sets:3,reps:'10',dur:null,rest:90},
+  {dayId:5,exId:21,sort:4,sets:3,reps:'12',dur:null,rest:60},{dayId:5,exId:13,sort:5,sets:3,reps:'12',dur:null,rest:60},{dayId:5,exId:23,sort:6,sets:3,reps:'20',dur:null,rest:45},
+  // Day 6: Upper
+  {dayId:6,exId:1,sort:1,sets:4,reps:'8',dur:null,rest:120},{dayId:6,exId:9,sort:2,sets:4,reps:'10',dur:null,rest:90},{dayId:6,exId:10,sort:3,sets:3,reps:'8',dur:null,rest:90},
+  {dayId:6,exId:8,sort:4,sets:3,reps:'10',dur:null,rest:90},{dayId:6,exId:12,sort:5,sets:3,reps:'12',dur:null,rest:60},{dayId:6,exId:13,sort:6,sets:3,reps:'12',dur:null,rest:60},
+  // Day 7: Lower
+  {dayId:7,exId:4,sort:1,sets:4,reps:'6',dur:null,rest:150},{dayId:7,exId:6,sort:2,sets:3,reps:'8',dur:null,rest:120},{dayId:7,exId:5,sort:3,sets:3,reps:'12',dur:null,rest:90},
+  {dayId:7,exId:31,sort:4,sets:3,reps:'10',dur:null,rest:90},{dayId:7,exId:15,sort:5,sets:4,reps:'15',dur:null,rest:45},{dayId:7,exId:32,sort:6,sets:3,reps:'15',dur:null,rest:45},
+  // Day 8: Home Upper Push + Core
+  {dayId:8,exId:18,sort:1,sets:4,reps:'AMRAP',dur:null,rest:60},{dayId:8,exId:26,sort:2,sets:3,reps:'8-10',dur:null,rest:60},{dayId:8,exId:27,sort:3,sets:3,reps:'12',dur:null,rest:60},
+  {dayId:8,exId:30,sort:4,sets:3,reps:'8',dur:null,rest:60},{dayId:8,exId:22,sort:5,sets:3,reps:null,dur:45,rest:30},{dayId:8,exId:23,sort:6,sets:3,reps:'20',dur:null,rest:30},
+  // Day 9: Home Lower
+  {dayId:9,exId:19,sort:1,sets:4,reps:'20',dur:null,rest:45},{dayId:9,exId:20,sort:2,sets:3,reps:'12 / leg',dur:null,rest:60},{dayId:9,exId:31,sort:3,sets:3,reps:'10 / leg',dur:null,rest:60},
+  {dayId:9,exId:21,sort:4,sets:4,reps:'15',dur:null,rest:45},{dayId:9,exId:15,sort:5,sets:4,reps:'20',dur:null,rest:30},
+  // Day 10: Home Full Body Circuit
+  {dayId:10,exId:25,sort:1,sets:3,reps:'10',dur:null,rest:45},{dayId:10,exId:29,sort:2,sets:3,reps:'15',dur:null,rest:45},{dayId:10,exId:18,sort:3,sets:3,reps:'15',dur:null,rest:45},
+  {dayId:10,exId:28,sort:4,sets:3,reps:'12',dur:null,rest:30},{dayId:10,exId:24,sort:5,sets:3,reps:null,dur:40,rest:30},
+  // Day 11: Home Upper (DB + band)
+  {dayId:11,exId:17,sort:1,sets:4,reps:'10',dur:null,rest:75},{dayId:11,exId:36,sort:2,sets:4,reps:'10',dur:null,rest:75},{dayId:11,exId:35,sort:3,sets:3,reps:'10',dur:null,rest:60},
+  {dayId:11,exId:33,sort:4,sets:3,reps:'12',dur:null,rest:60},{dayId:11,exId:37,sort:5,sets:3,reps:'12',dur:null,rest:45},{dayId:11,exId:38,sort:6,sets:3,reps:'12',dur:null,rest:45},{dayId:11,exId:40,sort:7,sets:3,reps:'15',dur:null,rest:30},
+  // Day 12: Home Lower (DB + KB)
+  {dayId:12,exId:34,sort:1,sets:4,reps:'12',dur:null,rest:75},{dayId:12,exId:39,sort:2,sets:4,reps:'15',dur:null,rest:60},{dayId:12,exId:31,sort:3,sets:3,reps:'10 / leg',dur:null,rest:60},
+  {dayId:12,exId:21,sort:4,sets:3,reps:'15',dur:null,rest:45},{dayId:12,exId:15,sort:5,sets:4,reps:'20',dur:null,rest:30},{dayId:12,exId:32,sort:6,sets:3,reps:'15',dur:null,rest:30},
+  // Day 13: HIIT A
+  {dayId:13,exId:49,sort:1,sets:4,reps:null,dur:40,rest:20},{dayId:13,exId:25,sort:2,sets:4,reps:null,dur:40,rest:20},{dayId:13,exId:24,sort:3,sets:4,reps:null,dur:40,rest:20},
+  {dayId:13,exId:29,sort:4,sets:4,reps:null,dur:40,rest:20},{dayId:13,exId:48,sort:5,sets:4,reps:null,dur:40,rest:20},
+  // Day 14: HIIT B
+  {dayId:14,exId:25,sort:1,sets:4,reps:null,dur:40,rest:20},{dayId:14,exId:20,sort:2,sets:4,reps:null,dur:40,rest:20},{dayId:14,exId:18,sort:3,sets:4,reps:null,dur:40,rest:20},
+  {dayId:14,exId:23,sort:4,sets:4,reps:null,dur:40,rest:20},{dayId:14,exId:47,sort:5,sets:4,reps:null,dur:60,rest:30},
+  // Day 15: Steady State
+  {dayId:15,exId:41,sort:1,sets:1,reps:null,dur:1800,rest:0},{dayId:15,exId:44,sort:2,sets:1,reps:null,dur:900,rest:0},{dayId:15,exId:55,sort:3,sets:2,reps:null,dur:60,rest:15},
+  // Day 16: Intervals
+  {dayId:16,exId:41,sort:1,sets:8,reps:null,dur:60,rest:90},{dayId:16,exId:42,sort:2,sets:1,reps:null,dur:1200,rest:0},{dayId:16,exId:43,sort:3,sets:3,reps:null,dur:300,rest:60},
+  // Day 17: Cardio + Core
+  {dayId:17,exId:51,sort:1,sets:1,reps:null,dur:1500,rest:0},{dayId:17,exId:43,sort:2,sets:1,reps:null,dur:600,rest:0},{dayId:17,exId:22,sort:3,sets:3,reps:null,dur:45,rest:30},
+  {dayId:17,exId:32,sort:4,sets:3,reps:'15',dur:null,rest:30},{dayId:17,exId:23,sort:5,sets:3,reps:'20',dur:null,rest:30},
+  // Day 18: Jog Day
+  {dayId:18,exId:46,sort:1,sets:1,reps:null,dur:300,rest:0},{dayId:18,exId:45,sort:2,sets:1,reps:null,dur:1800,rest:0},{dayId:18,exId:55,sort:3,sets:2,reps:null,dur:60,rest:15},{dayId:18,exId:53,sort:4,sets:2,reps:null,dur:60,rest:15},
+  // Day 19: Rope & Stairs
+  {dayId:19,exId:47,sort:1,sets:5,reps:null,dur:120,rest:45},{dayId:19,exId:48,sort:2,sets:4,reps:null,dur:45,rest:30},{dayId:19,exId:49,sort:3,sets:4,reps:null,dur:60,rest:30},{dayId:19,exId:50,sort:4,sets:6,reps:null,dur:60,rest:60},
+  // Day 20: Recovery Walk
+  {dayId:20,exId:46,sort:1,sets:1,reps:null,dur:2400,rest:0},{dayId:20,exId:52,sort:2,sets:2,reps:null,dur:60,rest:15},{dayId:20,exId:54,sort:3,sets:2,reps:null,dur:60,rest:15},
+  {dayId:20,exId:53,sort:4,sets:2,reps:null,dur:60,rest:15},{dayId:20,exId:55,sort:5,sets:2,reps:null,dur:60,rest:15},
+  // Day 21: Full Body Stretch
+  {dayId:21,exId:52,sort:1,sets:2,reps:null,dur:60,rest:10},{dayId:21,exId:54,sort:2,sets:2,reps:null,dur:60,rest:10},{dayId:21,exId:53,sort:3,sets:2,reps:null,dur:60,rest:10},{dayId:21,exId:55,sort:4,sets:2,reps:null,dur:60,rest:10}
+];
+
+// Workout log (in-memory, one session = one array entry)
+let workoutLog = [];
+
 // Comprehensive USDA / Standard Food Nutrition Catalog
 // Comprehensive Indian & Global Food Nutrition Catalog (with Indian Serving Sizes)
 const FOOD_NUTRITION_DB = {
@@ -5524,7 +5712,135 @@ async function requestHandler(req, res) {
     return;
   }
 
+  // =====================================================================
+  // WORKOUT API ROUTES
+  // =====================================================================
+
+  // GET /api/workout/plans  — list all plans with optional filters
+  if (pathname === '/api/workout/plans' && req.method === 'GET') {
+    const { goal, location: loc, level } = parsedUrl.query;
+    let plans = WORKOUT_PLANS.map(p => ({
+      ...p,
+      days: PLAN_DAYS.filter(d => d.planId === p.id).map(d => ({
+        ...d,
+        exercises: PLAN_DAY_EXERCISES
+          .filter(e => e.dayId === d.id)
+          .sort((a, b) => a.sort - b.sort)
+          .map(pde => {
+            const ex = EXERCISES_DB.find(e => e.id === pde.exId);
+            const muscle = MUSCLE_GROUPS.find(m => m.id === ex?.muscleId);
+            const equip = EQUIPMENT_LIST.find(e => e.id === ex?.equipId);
+            return { ...pde, exercise: ex?.name, muscle: muscle?.name, equipment: equip?.name, category: ex?.category, kcalPerMin: ex?.kcalPerMin };
+          })
+      }))
+    }));
+    if (goal) plans = plans.filter(p => p.goal === goal);
+    if (loc) plans = plans.filter(p => p.location === loc || p.location === 'both');
+    if (level) plans = plans.filter(p => p.level === level);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(plans));
+    return;
+  }
+
+  // GET /api/workout/exercises  — list exercises with filters
+  if (pathname === '/api/workout/exercises' && req.method === 'GET') {
+    const { category, location: loc, muscle, difficulty } = parsedUrl.query;
+    let exList = EXERCISES_DB.map(e => ({
+      ...e,
+      muscleName: MUSCLE_GROUPS.find(m => m.id === e.muscleId)?.name,
+      equipmentName: EQUIPMENT_LIST.find(eq => eq.id === e.equipId)?.name
+    }));
+    if (category) exList = exList.filter(e => e.category === category);
+    if (loc) exList = exList.filter(e => e.location === loc || e.location === 'both');
+    if (muscle) exList = exList.filter(e => e.muscleName?.toLowerCase().includes(muscle.toLowerCase()));
+    if (difficulty) exList = exList.filter(e => e.difficulty === difficulty);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(exList));
+    return;
+  }
+
+  // GET /api/workout/muscles  — muscle group list
+  if (pathname === '/api/workout/muscles' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(MUSCLE_GROUPS));
+    return;
+  }
+
+  // GET /api/workout/log  — get workout log entries (optionally filter by date)
+  if (pathname === '/api/workout/log' && req.method === 'GET') {
+    const { date } = parsedUrl.query;
+    let logs = workoutLog;
+    if (date) logs = logs.filter(l => l.date === date);
+    // Enrich with exercise names
+    logs = logs.map(l => ({
+      ...l,
+      exerciseName: EXERCISES_DB.find(e => e.id === l.exerciseId)?.name || 'Unknown'
+    }));
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(logs));
+    return;
+  }
+
+  // POST /api/workout/log  — log a workout set
+  if (pathname === '/api/workout/log' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const entry = {
+          id: Date.now().toString(),
+          date: data.date || getTodayStr(),
+          exerciseId: data.exerciseId,
+          setsDone: data.setsDone || null,
+          repsDone: data.repsDone || null,
+          weightKg: data.weightKg || null,
+          durationMin: data.durationMin || null,
+          notes: data.notes || '',
+          createdAt: new Date().toISOString()
+        };
+        workoutLog.push(entry);
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, entry }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // DELETE /api/workout/log/:id
+  if (pathname.startsWith('/api/workout/log/') && req.method === 'DELETE') {
+    const logId = pathname.split('/').pop();
+    const idx = workoutLog.findIndex(l => l.id === logId);
+    if (idx === -1) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Log entry not found' }));
+      return;
+    }
+    workoutLog.splice(idx, 1);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true }));
+    return;
+  }
+
+  // GET /api/workout/today-summary  — summary for today's logged exercises
+  if (pathname === '/api/workout/today-summary' && req.method === 'GET') {
+    const today = getTodayStr();
+    const todayLogs = workoutLog.filter(l => l.date === today);
+    const totalSets = todayLogs.reduce((s, l) => s + (l.setsDone || 0), 0);
+    const totalKcal = todayLogs.reduce((s, l) => {
+      const ex = EXERCISES_DB.find(e => e.id === l.exerciseId);
+      return s + (l.durationMin || 0) * (ex?.kcalPerMin || 0);
+    }, 0);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ date: today, exercisesLogged: todayLogs.length, totalSets, totalKcalBurned: Math.round(totalKcal) }));
+    return;
+  }
+
   // Serve static UI
+
   if (pathname === '/' || pathname === '/index.html') {
     const htmlPath = path.join(__dirname, 'caloriq_web.html');
     if (fs.existsSync(htmlPath)) {

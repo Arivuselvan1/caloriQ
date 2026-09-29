@@ -134,6 +134,9 @@
         <button onclick="switchTab('profile')" id="tab-profile" class="px-3 py-1.5 rounded-lg text-secondary hover:text-primary font-semibold text-xs tracking-wide transition">
           05 / METABOLIC GOALS
         </button>
+        <button onclick="switchTab('workout')" id="tab-workout" class="px-3 py-1.5 rounded-lg text-secondary hover:text-primary font-semibold text-xs tracking-wide transition">
+          06 / WORKOUT STUDIO
+        </button>
       </nav>
 
       <!-- Action Group -->
@@ -181,6 +184,10 @@
     <button onclick="switchTab('profile')" id="mob-tab-profile" class="flex flex-col items-center text-secondary hover:text-primary font-medium text-[9px] tracking-wider uppercase">
       <span class="material-symbols-outlined text-[19px]">tune</span>
       <span class="mt-0.5">Goals</span>
+    </button>
+    <button onclick="switchTab('workout')" id="mob-tab-workout" class="flex flex-col items-center text-secondary hover:text-primary font-medium text-[9px] tracking-wider uppercase">
+      <span class="material-symbols-outlined text-[19px]">fitness_center</span>
+      <span class="mt-0.5">Workout</span>
     </button>
   </nav>
 
@@ -1213,9 +1220,199 @@
         </div>
       </div>
     </div>
+
+    <!-- ==================== TAB 6: WORKOUT STUDIO ==================== -->
+    <div id="view-workout" class="hidden space-y-4">
+
+      <!-- Header -->
+      <div class="p-4 bg-surface-container-low border border-surface-container-highest flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-mono tracking-widest uppercase text-secondary">06 / WORKOUT STUDIO</span>
+          <h3 class="text-base font-bold text-primary tracking-tight">Training Plans &amp; Exercise Library</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <div id="workoutTodaySummaryBadge" class="hidden items-center gap-2 px-3 py-1.5 bg-surface-container border border-surface-container-highest text-[10px] font-mono">
+            <span class="material-symbols-outlined text-[14px] text-primary">local_fire_department</span>
+            <span id="workoutKcalBadge" class="text-primary font-bold">0 kcal</span>
+            <span class="text-secondary">burned today</span>
+          </div>
+          <button onclick="openWorkoutLogModal()" class="h-9 px-3 bg-primary text-on-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1.5 hover:bg-neutral-800 transition">
+            <span class="material-symbols-outlined text-[16px]">add_circle</span>
+            <span>Log Workout</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="flex gap-1 border-b border-surface-container-highest pb-0">
+        <button onclick="switchWorkoutTab('plans')" id="wtab-plans" class="px-4 py-2 text-[10px] font-bold uppercase tracking-wider border-b-2 border-primary text-primary transition">Plans</button>
+        <button onclick="switchWorkoutTab('exercises')" id="wtab-exercises" class="px-4 py-2 text-[10px] font-bold uppercase tracking-wider border-b-2 border-transparent text-secondary hover:text-primary transition">Exercises</button>
+        <button onclick="switchWorkoutTab('log')" id="wtab-log" class="px-4 py-2 text-[10px] font-bold uppercase tracking-wider border-b-2 border-transparent text-secondary hover:text-primary transition">Today's Log</button>
+      </div>
+
+      <!-- ===== PLANS PANEL ===== -->
+      <div id="wpanel-plans" class="space-y-3">
+        <!-- Filter Bar -->
+        <div class="flex flex-wrap gap-2 items-center">
+          <span class="text-[10px] font-mono text-secondary uppercase">Filter:</span>
+          <select id="wf-goal" onchange="filterWorkoutPlans()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">All Goals</option>
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="fat_loss">Fat Loss</option>
+            <option value="general_fitness">General Fitness</option>
+            <option value="endurance">Endurance</option>
+            <option value="recovery">Recovery</option>
+          </select>
+          <select id="wf-location" onchange="filterWorkoutPlans()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">Gym &amp; Home</option>
+            <option value="gym">Gym Only</option>
+            <option value="home">Home Only</option>
+          </select>
+          <select id="wf-level" onchange="filterWorkoutPlans()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <!-- Plan Cards Grid -->
+        <div id="workoutPlansGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="p-6 bg-surface-container-low border border-surface-container-highest text-center text-secondary text-xs font-mono">Loading plans...</div>
+        </div>
+      </div>
+
+      <!-- ===== EXERCISES PANEL ===== -->
+      <div id="wpanel-exercises" class="hidden space-y-3">
+        <div class="flex flex-wrap gap-2 items-center">
+          <span class="text-[10px] font-mono text-secondary uppercase">Filter:</span>
+          <select id="ef-category" onchange="filterExercises()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">All Categories</option>
+            <option value="strength">Strength</option>
+            <option value="cardio">Cardio</option>
+            <option value="hiit">HIIT</option>
+            <option value="core">Core</option>
+            <option value="mobility">Mobility</option>
+          </select>
+          <select id="ef-location" onchange="filterExercises()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">Gym &amp; Home</option>
+            <option value="gym">Gym</option>
+            <option value="home">Home</option>
+            <option value="both">Both</option>
+          </select>
+          <select id="ef-difficulty" onchange="filterExercises()" class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none">
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <input id="ef-search" oninput="filterExercises()" type="text" placeholder="Search exercise..." class="text-[10px] font-mono bg-surface-container border border-surface-container-highest text-primary px-2 py-1.5 outline-none placeholder:text-secondary flex-1 min-w-[140px]">
+        </div>
+        <div id="exercisesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div class="p-6 bg-surface-container-low border border-surface-container-highest text-center text-secondary text-xs font-mono">Loading exercises...</div>
+        </div>
+      </div>
+
+      <!-- ===== LOG PANEL ===== -->
+      <div id="wpanel-log" class="hidden space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-mono text-secondary uppercase">Today's Workout Entries</span>
+          <span id="wlogDate" class="text-[10px] font-mono text-primary font-bold"></span>
+        </div>
+        <div id="workoutLogList" class="space-y-2">
+          <div class="p-6 border border-dashed border-surface-container-highest text-center text-secondary text-xs font-mono">
+            No workout logged today. Tap <strong>Log Workout</strong> to start.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /view-workout -->
+
   </main>
 
+
+  <!-- ==================== MODAL: WORKOUT LOG ENTRY ==================== -->
+  <div id="workoutLogModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh] font-mono">
+      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-primary">fitness_center</span>
+          <div>
+            <div class="text-[10px] font-mono text-secondary uppercase tracking-wider">Log Workout Set</div>
+            <div class="font-bold text-sm text-primary">Add Exercise Entry</div>
+          </div>
+        </div>
+        <button onclick="closeWorkoutLogModal()" class="text-secondary hover:text-primary">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto space-y-3 flex-1">
+        <!-- Search exercise -->
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Exercise</label>
+          <input id="wlog-ex-search" type="text" placeholder="Type to search exercise..." oninput="filterWlogExercises()" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+          <div id="wlog-ex-results" class="mt-1 max-h-40 overflow-y-auto border border-surface-container-highest hidden">
+          </div>
+          <div id="wlog-ex-selected" class="mt-1 hidden">
+            <div class="flex items-center gap-2 px-3 py-2 bg-primary/10 border border-primary text-primary text-xs font-mono">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
+              <span id="wlog-ex-name" class="font-bold"></span>
+              <button onclick="clearWlogExercise()" class="ml-auto text-secondary hover:text-primary text-[10px]">✕ Change</button>
+            </div>
+          </div>
+          <input type="hidden" id="wlog-ex-id">
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Sets</label>
+            <input id="wlog-sets" type="number" min="1" max="20" placeholder="e.g. 3" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Reps</label>
+            <input id="wlog-reps" type="number" min="1" max="200" placeholder="e.g. 10" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Weight (kg)</label>
+            <input id="wlog-weight" type="number" min="0" step="0.5" placeholder="0 = BW" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Duration (minutes) — for cardio/timed</label>
+          <input id="wlog-duration" type="number" min="0" step="0.5" placeholder="e.g. 30" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider text-secondary block mb-1">Notes (optional)</label>
+          <input id="wlog-notes" type="text" placeholder="e.g. felt strong, added 2.5 kg" class="w-full text-xs font-mono bg-surface-container border border-surface-container-highest text-primary px-3 py-2 outline-none placeholder:text-secondary">
+        </div>
+        <div id="wlogError" class="hidden text-xs text-red-500 font-mono px-1"></div>
+      </div>
+      <div class="p-4 border-t border-surface-container-highest flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closeWorkoutLogModal()" class="h-9 px-4 border border-surface-container-highest text-secondary hover:text-primary text-xs font-semibold uppercase">Cancel</button>
+        <button onclick="submitWorkoutLog()" class="h-9 px-4 bg-primary text-on-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1.5 hover:bg-neutral-800 transition">
+          <span class="material-symbols-outlined text-[16px]">save</span>
+          Save Entry
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: PLAN DETAIL ==================== -->
+  <div id="planDetailModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-2xl w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[90vh] font-mono">
+      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
+        <div>
+          <div class="text-[10px] font-mono text-secondary uppercase tracking-wider">Workout Plan</div>
+          <div id="planDetailName" class="font-bold text-base text-primary"></div>
+        </div>
+        <button onclick="closePlanDetailModal()" class="text-secondary hover:text-primary">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex-1 space-y-4" id="planDetailContent"></div>
+    </div>
+  </div>
+
   <!-- ==================== MODAL: PHOTO FOOD SCANNER ==================== -->
+
   <div id="photoScannerModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-surface-container-lowest max-w-lg w-full p-5 border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh]">
       
@@ -5358,7 +5555,7 @@
 
     // --- Tab Switching ---
     function switchTab(tabId) {
-      ['today', 'health', 'ria', 'trackers', 'profile'].forEach(t => {
+      ['today', 'health', 'ria', 'trackers', 'profile', 'workout'].forEach(t => {
         document.getElementById('view-' + t)?.classList.add('hidden');
         const desk = document.getElementById('tab-' + t);
         if (desk) desk.className = 'px-3 py-1.5 rounded-lg text-secondary hover:text-primary font-semibold text-xs tracking-wide transition';
@@ -5377,6 +5574,7 @@
       if (tabId === 'ria') { loadSmartPlans(); }
       if (tabId === 'trackers') loadTrackers();
       if (tabId === 'profile') loadProfile();
+      if (tabId === 'workout') loadWorkoutTab();
     }
     // ==================== ONE-TOUCH INDIAN FOOD LOGIC ====================
     let indianFoodsDb = {};
@@ -7604,6 +7802,322 @@ INSTRUCTIONS:
     // Start Multi-Device Enclave Synchronization
     pairCurrentDevice();
     startSyncPulseLoop();
+
+    // ==================== WORKOUT STUDIO ====================
+    let _workoutPlansCache = [];
+    let _exercisesCache = [];
+    let _wlogExercisesAll = [];
+
+    const GOAL_LABELS = { muscle_gain:'Muscle Gain', fat_loss:'Fat Loss', general_fitness:'General Fitness', endurance:'Endurance', recovery:'Recovery' };
+    const GOAL_COLORS = { muscle_gain:'text-blue-400', fat_loss:'text-orange-400', general_fitness:'text-green-400', endurance:'text-purple-400', recovery:'text-teal-400' };
+    const CAT_ICONS   = { strength:'fitness_center', cardio:'directions_run', hiit:'bolt', core:'self_improvement', mobility:'accessibility_new' };
+    const LOC_ICONS   = { gym:'location_on', home:'home', both:'swap_horiz' };
+
+    async function loadWorkoutTab() {
+      await Promise.all([loadWorkoutPlans(), loadExercises(), loadWorkoutLog(), loadWorkoutTodaySummary()]);
+    }
+
+    // --- Plans ---
+    async function loadWorkoutPlans() {
+      try {
+        const r = await fetch('/api/workout/plans');
+        if (!r.ok) return;
+        _workoutPlansCache = await r.json();
+        renderWorkoutPlans(_workoutPlansCache);
+      } catch(e) { console.error('Workout plans load error', e); }
+    }
+
+    function filterWorkoutPlans() {
+      const goal = document.getElementById('wf-goal').value;
+      const loc  = document.getElementById('wf-location').value;
+      const lvl  = document.getElementById('wf-level').value;
+      let plans  = _workoutPlansCache;
+      if (goal) plans = plans.filter(p => p.goal === goal);
+      if (loc)  plans = plans.filter(p => p.location === loc || p.location === 'both');
+      if (lvl)  plans = plans.filter(p => p.level === lvl);
+      renderWorkoutPlans(plans);
+    }
+
+    function renderWorkoutPlans(plans) {
+      const grid = document.getElementById('workoutPlansGrid');
+      if (!plans || plans.length === 0) {
+        grid.innerHTML = '<div class="col-span-3 p-8 text-center text-secondary text-xs font-mono border border-dashed border-surface-container-highest">No plans match your filters.</div>';
+        return;
+      }
+      grid.innerHTML = plans.map(p => {
+        const goalColor = GOAL_COLORS[p.goal] || 'text-secondary';
+        const dayCount  = p.days?.length || p.daysPerWeek;
+        return `
+          <div class="p-4 bg-surface-container-low border border-surface-container-highest hover:border-primary transition cursor-pointer group" onclick="openPlanDetail(${p.id})">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <div class="text-[10px] font-mono text-secondary uppercase tracking-wider">${p.level} · ${p.location === 'both' ? 'Gym / Home' : p.location.charAt(0).toUpperCase() + p.location.slice(1)}</div>
+                <div class="font-bold text-sm text-primary mt-0.5 group-hover:text-primary leading-tight">${p.name}</div>
+              </div>
+              <span class="material-symbols-outlined text-[22px] text-secondary group-hover:text-primary transition">${p.location === 'home' ? 'home' : 'fitness_center'}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-3 text-[10px] font-mono">
+              <span class="${goalColor} font-bold uppercase">${GOAL_LABELS[p.goal] || p.goal}</span>
+              <span class="text-secondary">·</span>
+              <span class="text-secondary">${p.daysPerWeek}d/wk</span>
+              <span class="text-secondary">·</span>
+              <span class="text-secondary">${p.sessionMin} min</span>
+            </div>
+            <div class="mt-2 text-[10px] text-secondary font-mono leading-snug">${p.notes || ''}</div>
+            <div class="mt-3 pt-2 border-t border-surface-container-highest flex items-center justify-between">
+              <span class="text-[10px] text-secondary font-mono">${dayCount} training day${dayCount !== 1 ? 's' : ''}</span>
+              <span class="text-[10px] text-primary font-bold uppercase tracking-wider group-hover:underline">View Plan →</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openPlanDetail(planId) {
+      const plan = _workoutPlansCache.find(p => p.id === planId);
+      if (!plan) return;
+      document.getElementById('planDetailName').textContent = plan.name;
+      const content = document.getElementById('planDetailContent');
+      content.innerHTML = (plan.days || []).map(day => `
+        <div class="border border-surface-container-highest">
+          <div class="px-4 py-2 bg-surface-container flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-mono text-secondary uppercase">Day ${day.dayNum}</span>
+              <span class="text-primary font-bold text-xs ml-2">${day.dayName}</span>
+            </div>
+            <span class="text-[10px] text-secondary font-mono">${day.focus || ''}</span>
+          </div>
+          <table class="w-full text-[10px] font-mono">
+            <thead>
+              <tr class="border-b border-surface-container-highest text-secondary">
+                <th class="text-left px-3 py-1.5 font-semibold">#</th>
+                <th class="text-left px-3 py-1.5 font-semibold">Exercise</th>
+                <th class="text-left px-3 py-1.5 font-semibold">Muscle</th>
+                <th class="text-left px-3 py-1.5 font-semibold">Sets</th>
+                <th class="text-left px-3 py-1.5 font-semibold">Work</th>
+                <th class="text-left px-3 py-1.5 font-semibold">Rest</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(day.exercises || []).map((ex, i) => `
+                <tr class="border-b border-surface-container-highest hover:bg-surface-container/50 transition">
+                  <td class="px-3 py-2 text-secondary">${i+1}</td>
+                  <td class="px-3 py-2 text-primary font-semibold">${ex.exercise}</td>
+                  <td class="px-3 py-2 text-secondary">${ex.muscle}</td>
+                  <td class="px-3 py-2 text-primary">${ex.sets}</td>
+                  <td class="px-3 py-2 text-primary">${ex.reps || (ex.dur ? ex.dur + 's' : '—')}</td>
+                  <td class="px-3 py-2 text-secondary">${ex.rest}s</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`).join('');
+      document.getElementById('planDetailModal').classList.remove('hidden');
+    }
+    function closePlanDetailModal() { document.getElementById('planDetailModal').classList.add('hidden'); }
+
+    // --- Exercises ---
+    async function loadExercises() {
+      try {
+        const r = await fetch('/api/workout/exercises');
+        if (!r.ok) return;
+        _exercisesCache = await r.json();
+        _wlogExercisesAll = _exercisesCache;
+        renderExercises(_exercisesCache);
+      } catch(e) { console.error('Exercises load error', e); }
+    }
+
+    function filterExercises() {
+      const cat  = document.getElementById('ef-category').value;
+      const loc  = document.getElementById('ef-location').value;
+      const diff = document.getElementById('ef-difficulty').value;
+      const q    = document.getElementById('ef-search').value.toLowerCase();
+      let exs    = _exercisesCache;
+      if (cat)  exs = exs.filter(e => e.category === cat);
+      if (loc)  exs = exs.filter(e => e.location === loc || e.location === 'both');
+      if (diff) exs = exs.filter(e => e.difficulty === diff);
+      if (q)    exs = exs.filter(e => e.name.toLowerCase().includes(q) || (e.muscleName||'').toLowerCase().includes(q));
+      renderExercises(exs);
+    }
+
+    function renderExercises(exs) {
+      const grid = document.getElementById('exercisesGrid');
+      if (!exs || exs.length === 0) {
+        grid.innerHTML = '<div class="col-span-3 p-8 text-center text-secondary text-xs font-mono border border-dashed border-surface-container-highest">No exercises match your filters.</div>';
+        return;
+      }
+      const CAT_BG = { strength:'bg-blue-500/10 text-blue-400', cardio:'bg-orange-500/10 text-orange-400', hiit:'bg-red-500/10 text-red-400', core:'bg-purple-500/10 text-purple-400', mobility:'bg-teal-500/10 text-teal-400' };
+      grid.innerHTML = exs.map(e => `
+        <div class="p-3 bg-surface-container-low border border-surface-container-highest hover:border-primary transition">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex-1">
+              <span class="inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase ${CAT_BG[e.category] || 'bg-surface-container text-secondary'} mb-1">${e.category}</span>
+              <div class="font-bold text-xs text-primary leading-tight">${e.name}</div>
+            </div>
+            <span class="material-symbols-outlined text-[18px] text-secondary shrink-0">${CAT_ICONS[e.category] || 'fitness_center'}</span>
+          </div>
+          <div class="text-[10px] font-mono text-secondary space-y-0.5">
+            <div>💪 ${e.muscleName}</div>
+            <div>🏋️ ${e.equipmentName}</div>
+            <div class="flex items-center gap-3 mt-1">
+              <span class="${e.difficulty === 'beginner' ? 'text-green-400' : e.difficulty === 'intermediate' ? 'text-yellow-400' : 'text-red-400'} font-bold uppercase text-[9px]">${e.difficulty}</span>
+              <span class="text-secondary">${e.location === 'both' ? '🏠 Home or Gym' : e.location === 'gym' ? '🏟️ Gym' : '🏠 Home'}</span>
+              ${e.kcalPerMin ? `<span class="text-orange-400 font-bold">${e.kcalPerMin} kcal/min</span>` : ''}
+            </div>
+          </div>
+          <button onclick="prefillWlogExercise(${e.id}, '${e.name.replace(/'/g, "\\'")}')" class="mt-2 w-full py-1 text-[9px] font-bold uppercase border border-surface-container-highest hover:border-primary hover:text-primary text-secondary transition">+ Log This</button>
+        </div>`).join('');
+    }
+
+    // --- Workout sub-tab ---
+    function switchWorkoutTab(tab) {
+      ['plans','exercises','log'].forEach(t => {
+        document.getElementById('wpanel-' + t)?.classList.add('hidden');
+        const btn = document.getElementById('wtab-' + t);
+        if (btn) { btn.className = 'px-4 py-2 text-[10px] font-bold uppercase tracking-wider border-b-2 border-transparent text-secondary hover:text-primary transition'; }
+      });
+      document.getElementById('wpanel-' + tab)?.classList.remove('hidden');
+      const activeBtn = document.getElementById('wtab-' + tab);
+      if (activeBtn) activeBtn.className = 'px-4 py-2 text-[10px] font-bold uppercase tracking-wider border-b-2 border-primary text-primary transition';
+      if (tab === 'log') { loadWorkoutLog(); loadWorkoutTodaySummary(); }
+    }
+
+    // --- Workout Log ---
+    async function loadWorkoutLog() {
+      try {
+        const today = new Date().toISOString().slice(0,10);
+        document.getElementById('wlogDate').textContent = today;
+        const r = await fetch('/api/workout/log?date=' + today);
+        if (!r.ok) return;
+        const logs = await r.json();
+        renderWorkoutLog(logs);
+      } catch(e) { console.error('Workout log load error', e); }
+    }
+
+    function renderWorkoutLog(logs) {
+      const list = document.getElementById('workoutLogList');
+      if (!logs || logs.length === 0) {
+        list.innerHTML = '<div class="p-6 border border-dashed border-surface-container-highest text-center text-secondary text-xs font-mono">No workout logged today. Tap <strong>Log Workout</strong> to start.</div>';
+        return;
+      }
+      list.innerHTML = logs.map(l => `
+        <div class="flex items-center gap-3 p-3 bg-surface-container-low border border-surface-container-highest">
+          <span class="material-symbols-outlined text-[18px] text-primary">fitness_center</span>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-xs text-primary">${l.exerciseName}</div>
+            <div class="text-[10px] font-mono text-secondary mt-0.5">
+              ${l.setsDone ? l.setsDone + ' sets' : ''}${l.repsDone ? ' × ' + l.repsDone + ' reps' : ''}${l.weightKg ? ' @ ' + l.weightKg + ' kg' : ''}${l.durationMin ? ' · ' + l.durationMin + ' min' : ''}
+              ${l.notes ? ' · ' + l.notes : ''}
+            </div>
+          </div>
+          <button onclick="deleteWorkoutLog('${l.id}')" class="text-secondary hover:text-red-400 transition shrink-0">
+            <span class="material-symbols-outlined text-[16px]">delete</span>
+          </button>
+        </div>`).join('');
+    }
+
+    async function loadWorkoutTodaySummary() {
+      try {
+        const r = await fetch('/api/workout/today-summary');
+        if (!r.ok) return;
+        const s = await r.json();
+        const badge = document.getElementById('workoutTodaySummaryBadge');
+        if (s.totalKcalBurned > 0 || s.exercisesLogged > 0) {
+          document.getElementById('workoutKcalBadge').textContent = s.totalKcalBurned + ' kcal';
+          badge.classList.remove('hidden');
+          badge.classList.add('flex');
+        } else {
+          badge.classList.add('hidden');
+          badge.classList.remove('flex');
+        }
+      } catch(e) {}
+    }
+
+    async function deleteWorkoutLog(id) {
+      try {
+        await fetch('/api/workout/log/' + id, { method: 'DELETE' });
+        await loadWorkoutLog();
+        await loadWorkoutTodaySummary();
+      } catch(e) {}
+    }
+
+    // --- Workout Log Modal ---
+    function openWorkoutLogModal(preExId, preExName) {
+      document.getElementById('wlog-ex-search').value = '';
+      document.getElementById('wlog-ex-results').classList.add('hidden');
+      document.getElementById('wlog-ex-selected').classList.add('hidden');
+      document.getElementById('wlog-ex-id').value = '';
+      document.getElementById('wlog-sets').value = '';
+      document.getElementById('wlog-reps').value = '';
+      document.getElementById('wlog-weight').value = '';
+      document.getElementById('wlog-duration').value = '';
+      document.getElementById('wlog-notes').value = '';
+      document.getElementById('wlogError').classList.add('hidden');
+      if (preExId) selectWlogExercise(preExId, preExName);
+      document.getElementById('workoutLogModal').classList.remove('hidden');
+    }
+    function closeWorkoutLogModal() { document.getElementById('workoutLogModal').classList.add('hidden'); }
+
+    function filterWlogExercises() {
+      const q = document.getElementById('wlog-ex-search').value.toLowerCase();
+      const results = document.getElementById('wlog-ex-results');
+      if (!q || q.length < 1) { results.classList.add('hidden'); return; }
+      const matches = (_wlogExercisesAll.length ? _wlogExercisesAll : _exercisesCache)
+        .filter(e => e.name.toLowerCase().includes(q))
+        .slice(0, 8);
+      if (matches.length === 0) { results.classList.add('hidden'); return; }
+      results.innerHTML = matches.map(e =>
+        `<div onclick="selectWlogExercise(${e.id}, '${e.name.replace(/'/g, "\\'")}')" class="px-3 py-2 text-xs font-mono text-primary hover:bg-surface-container cursor-pointer border-b border-surface-container-highest last:border-0">
+          <span class="font-semibold">${e.name}</span>
+          <span class="text-secondary ml-2 text-[10px]">${e.muscleName} · ${e.category}</span>
+        </div>`).join('');
+      results.classList.remove('hidden');
+    }
+
+    function selectWlogExercise(id, name) {
+      document.getElementById('wlog-ex-id').value = id;
+      document.getElementById('wlog-ex-name').textContent = name;
+      document.getElementById('wlog-ex-selected').classList.remove('hidden');
+      document.getElementById('wlog-ex-results').classList.add('hidden');
+      document.getElementById('wlog-ex-search').value = '';
+    }
+    function clearWlogExercise() {
+      document.getElementById('wlog-ex-id').value = '';
+      document.getElementById('wlog-ex-selected').classList.add('hidden');
+      document.getElementById('wlog-ex-search').value = '';
+    }
+
+    function prefillWlogExercise(id, name) {
+      openWorkoutLogModal(id, name);
+      switchWorkoutTab('log');
+    }
+
+    async function submitWorkoutLog() {
+      const exId = document.getElementById('wlog-ex-id').value;
+      const errEl = document.getElementById('wlogError');
+      if (!exId) { errEl.textContent = 'Please select an exercise first.'; errEl.classList.remove('hidden'); return; }
+      errEl.classList.add('hidden');
+      const payload = {
+        exerciseId: parseInt(exId),
+        setsDone: parseInt(document.getElementById('wlog-sets').value) || null,
+        repsDone: parseInt(document.getElementById('wlog-reps').value) || null,
+        weightKg: parseFloat(document.getElementById('wlog-weight').value) || null,
+        durationMin: parseFloat(document.getElementById('wlog-duration').value) || null,
+        notes: document.getElementById('wlog-notes').value.trim()
+      };
+      try {
+        const r = await fetch('/api/workout/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!r.ok) throw new Error('Server error');
+        closeWorkoutLogModal();
+        switchWorkoutTab('log');
+        await loadWorkoutLog();
+        await loadWorkoutTodaySummary();
+      } catch(e) {
+        errEl.textContent = 'Failed to save: ' + e.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+    // ==================== END WORKOUT STUDIO ====================
+
   </script>
+
 </body>
 </html>
