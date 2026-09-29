@@ -21,6 +21,17 @@ function getNetworkIps() {
   return ips;
 }
 
+function getBaseUrl(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const proto = req.headers['x-forwarded-proto'] || (req.socket?.encrypted ? 'https' : 'http');
+  if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+    return `${proto}://${host}`;
+  }
+  const ips = getNetworkIps();
+  const primaryIp = ips[0] || 'localhost';
+  return `http://${primaryIp}:${PORT}`;
+}
+
 // ==================== MULTI-DEVICE ENCLAVE SYNCHRONIZATION ENGINE ====================
 const DEFAULT_SYNC_CODE = 'CQ-8420-9173';
 
@@ -5779,12 +5790,13 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
     const enclave = getEnclave(code);
     const ips = getNetworkIps();
     const primaryIp = ips[0] || 'localhost';
+    const baseUrl = getBaseUrl(req);
     const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').replace('::ffff:', '');
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       syncCode: enclave.code,
-      pairUrl: `http://${primaryIp}:${PORT}/?sync=${enclave.code}`,
+      pairUrl: `${baseUrl}/?sync=${enclave.code}`,
       localUrl: `http://localhost:${PORT}/?sync=${enclave.code}`,
       primaryIp,
       networkIps: ips,
@@ -5802,9 +5814,8 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
   if (pathname === '/api/sync/qr.svg' && req.method === 'GET') {
     const code = parsedUrl.query.code || getActiveEnclaveCode(req);
     const size = Math.min(600, Math.max(120, parseInt(parsedUrl.query.size, 10) || 280));
-    const ips = getNetworkIps();
-    const targetIp = parsedUrl.query.ip || ips[0] || 'localhost';
-    const targetUrl = `http://${targetIp}:${PORT}/?sync=${code}`;
+    const baseUrl = getBaseUrl(req);
+    const targetUrl = parsedUrl.query.url || `${baseUrl}/?sync=${code}`;
 
     const svg = CaloriqQR.generateQRCodeSVG(targetUrl, size, 2);
     res.writeHead(200, {
@@ -5826,9 +5837,7 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
         const enclave = getEnclave(code);
         const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').replace('::ffff:', '');
         const dev = registerOrUpdateDevice(enclave, deviceId, deviceName, platform, clientIp);
-
-        const ips = getNetworkIps();
-        const primaryIp = ips[0] || 'localhost';
+        const baseUrl = getBaseUrl(req);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
@@ -5837,7 +5846,7 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
           device: dev,
           deviceCount: enclave.devices.length,
           devices: enclave.devices,
-          pairUrl: `http://${primaryIp}:${PORT}/?sync=${enclave.code}`,
+          pairUrl: `${baseUrl}/?sync=${enclave.code}`,
           lastUpdated: enclave.lastUpdated
         }));
       } catch (err) {
@@ -5878,14 +5887,13 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
   if (pathname === '/api/sync/generate-code' && req.method === 'POST') {
     const newCode = generateRandomSyncCode();
     const enclave = getEnclave(newCode);
-    const ips = getNetworkIps();
-    const primaryIp = ips[0] || 'localhost';
+    const baseUrl = getBaseUrl(req);
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       success: true,
       syncCode: newCode,
-      pairUrl: `http://${primaryIp}:${PORT}/?sync=${newCode}`,
+      pairUrl: `${baseUrl}/?sync=${newCode}`,
       localUrl: `http://localhost:${PORT}/?sync=${newCode}`
     }));
     return;
@@ -6043,7 +6051,9 @@ Format with clear headings using **bold** and bullet points. Keep it under 500 w
   // Serve static UI
 
   if (pathname === '/' || pathname === '/index.html') {
-    const htmlPath = path.join(__dirname, 'caloriq_web.html');
+    const htmlPath = fs.existsSync(path.join(__dirname, 'caloriq_web.html'))
+      ? path.join(__dirname, 'caloriq_web.html')
+      : path.join(__dirname, 'index.html');
     if (fs.existsSync(htmlPath)) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(fs.readFileSync(htmlPath, 'utf8'));

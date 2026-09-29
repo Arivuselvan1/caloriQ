@@ -46,3 +46,4 @@ android/**/GeneratedPluginRegistrant.java
 *.log
 scratch/
 tmp/
+.vercel

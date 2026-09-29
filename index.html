@@ -71,6 +71,7 @@
         }
       }
     };
+  </script>
   <script src="/qr_lib.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -2230,9 +2231,9 @@
             </div>
             
             <div class="mt-2 text-center w-full">
-              <span class="text-[9px] uppercase tracking-widest text-secondary font-bold block">Unique Enclave Code</span>
+              <span class="text-[9px] uppercase tracking-widest text-secondary font-bold block">Unique Device Enclave Code</span>
               <div class="flex items-center justify-center gap-2 mt-1">
-                <span id="syncEnclaveCodeText" class="text-xl font-mono font-black text-primary tracking-widest bg-surface-container-low px-3 py-1 border border-surface-container-highest rounded">CQ-8420-9173</span>
+                <span id="syncEnclaveCodeText" class="text-xl font-mono font-black text-primary tracking-widest bg-surface-container-low px-3 py-1 border border-surface-container-highest rounded">--</span>
                 <button onclick="copySyncEnclaveCode()" class="h-8 px-2.5 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-800 transition flex items-center gap-1 rounded">
                   <span class="material-symbols-outlined text-[14px]">content_copy</span>
                   <span id="copyCodeBtnLabel">Copy</span>
@@ -2320,7 +2321,7 @@
         <div id="syncModalTab-devices" class="space-y-4 hidden">
           <div class="flex items-center justify-between">
             <span class="text-[10px] uppercase font-bold text-secondary tracking-wider">Active Enclave Devices:</span>
-            <span id="activeEnclaveBadgeLabel" class="text-[9px] font-mono font-bold bg-surface-container px-2 py-0.5 text-primary">CQ-8420-9173</span>
+            <span id="activeEnclaveBadgeLabel" class="text-[9px] font-mono font-bold bg-surface-container px-2 py-0.5 text-primary">--</span>
           </div>
 
           <!-- Devices List Container -->
@@ -7809,7 +7810,20 @@ Do not include markdown formatting or wrapper text.`;
     }
 
     // ==================== MULTI-DEVICE INTER-CONNECT & QR SYNC ENGINE ====================
-    let currentSyncCode = localStorage.getItem('caloriq_sync_code') || 'CQ-8420-9173';
+    function generateRandomSyncCode() {
+      const p1 = Math.floor(1000 + Math.random() * 9000);
+      const p2 = Math.floor(1000 + Math.random() * 9000);
+      return `CQ-${p1}-${p2}`;
+    }
+
+    // If device had the old global hardcoded fallback 'CQ-8420-9173', upgrade to a unique enclave code
+    let savedSyncCode = localStorage.getItem('caloriq_sync_code');
+    if (!savedSyncCode || savedSyncCode === 'CQ-8420-9173') {
+      savedSyncCode = generateRandomSyncCode();
+      localStorage.setItem('caloriq_sync_code', savedSyncCode);
+    }
+    let currentSyncCode = savedSyncCode;
+
     let currentDeviceId = localStorage.getItem('caloriq_device_id');
     if (!currentDeviceId) {
       currentDeviceId = 'dev_' + Math.random().toString(36).substring(2, 9);
@@ -7923,35 +7937,47 @@ Do not include markdown formatting or wrapper text.`;
     }
 
     async function loadSyncInfoAndRender() {
+      // Prioritize window.location.origin so scanned QR opens the current host (works on Vercel and local network)
+      const currentHostPairUrl = `${window.location.origin}/?sync=${encodeURIComponent(currentSyncCode)}`;
+
+      // Immediately render local UI with current sync code and pair URL
+      const codeEl = document.getElementById('syncEnclaveCodeText');
+      if (codeEl) codeEl.innerText = currentSyncCode;
+
+      const urlInput = document.getElementById('syncPairUrlInput');
+      if (urlInput) urlInput.value = currentHostPairUrl;
+
+      const testLink = document.getElementById('testSecondDeviceLink');
+      if (testLink) testLink.href = currentHostPairUrl;
+
+      const encBadge = document.getElementById('activeEnclaveBadgeLabel');
+      if (encBadge) encBadge.innerText = currentSyncCode;
+
+      // Render QR Code immediately using currentHostPairUrl
+      renderQrCodeSvg(currentHostPairUrl);
+
       try {
         const res = await fetch(`/api/sync/info?code=${encodeURIComponent(currentSyncCode)}`);
-        const info = await res.json();
-        syncEnclaveData = info;
+        if (res.ok) {
+          const info = await res.json();
+          syncEnclaveData = info;
 
-        // Display Enclave Code
-        const codeEl = document.getElementById('syncEnclaveCodeText');
-        if (codeEl) codeEl.innerText = info.syncCode;
+          if (info.syncCode) {
+            currentSyncCode = info.syncCode;
+            if (codeEl) codeEl.innerText = info.syncCode;
+            if (encBadge) encBadge.innerText = info.syncCode;
+          }
 
-        // Display Pair URL
-        const urlInput = document.getElementById('syncPairUrlInput');
-        if (urlInput) urlInput.value = info.pairUrl;
+          const effectivePairUrl = info.pairUrl || currentHostPairUrl;
+          if (urlInput) urlInput.value = effectivePairUrl;
+          if (testLink) testLink.href = effectivePairUrl;
 
-        // Test Link
-        const testLink = document.getElementById('testSecondDeviceLink');
-        if (testLink) testLink.href = info.pairUrl;
-
-        // Badges
-        const encBadge = document.getElementById('activeEnclaveBadgeLabel');
-        if (encBadge) encBadge.innerText = info.syncCode;
-
-        updateSyncHeaderBadge(info.deviceCount);
-
-        // Render QR Code SVG
-        renderQrCodeSvg(info.pairUrl);
-
-        renderConnectedDevicesList();
+          updateSyncHeaderBadge(info.deviceCount);
+          renderQrCodeSvg(effectivePairUrl);
+          renderConnectedDevicesList();
+        }
       } catch (e) {
-        console.error('Failed to load sync info:', e);
+        console.warn('Network sync info fetch fallback:', e);
       }
     }
 
@@ -7959,18 +7985,22 @@ Do not include markdown formatting or wrapper text.`;
       const container = document.getElementById('qrCodeSvgContainer');
       if (!container) return;
 
-      if (window.CaloriqQR && window.CaloriqQR.generateQRCodeSVG) {
+      const targetUrl = pairUrl || `${window.location.origin}/?sync=${encodeURIComponent(currentSyncCode)}`;
+
+      if (window.CaloriqQR && typeof window.CaloriqQR.generateQRCodeSVG === 'function') {
         try {
-          const svg = window.CaloriqQR.generateQRCodeSVG(pairUrl, 220, 2);
-          container.innerHTML = svg;
-          return;
+          const svg = window.CaloriqQR.generateQRCodeSVG(targetUrl, 220, 2);
+          if (svg && svg.includes('<svg')) {
+            container.innerHTML = svg;
+            return;
+          }
         } catch (err) {
           console.warn('Client QR render fallback:', err);
         }
       }
 
-      // Server fallback image
-      container.innerHTML = `<img src="/api/sync/qr.svg?code=${encodeURIComponent(currentSyncCode)}&size=220" alt="Pair QR Code" class="w-full h-full object-contain">`;
+      // Server fallback image with explicit targetUrl
+      container.innerHTML = `<img src="/api/sync/qr.svg?code=${encodeURIComponent(currentSyncCode)}&url=${encodeURIComponent(targetUrl)}&size=220" alt="Pair QR Code" class="w-full h-full object-contain">`;
     }
 
     function renderConnectedDevicesList() {
