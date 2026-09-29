@@ -1707,8 +1707,8 @@
   </div>
 
   <!-- ==================== MODAL: WORKOUT LOG ENTRY ==================== -->
-  <div id="workoutLogModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-lg w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh] font-mono">
+  <div id="workoutLogModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-lg w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[92vh] font-mono rounded-xl overflow-hidden">
       <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[20px] text-primary">fitness_center</span>
@@ -1717,8 +1717,8 @@
             <div class="font-bold text-sm text-primary">Add Exercise Entry</div>
           </div>
         </div>
-        <button onclick="closeWorkoutLogModal()" class="text-secondary hover:text-primary">
-          <span class="material-symbols-outlined">close</span>
+        <button onclick="closeWorkoutLogModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high transition">
+          <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
       <div class="p-4 overflow-y-auto space-y-3 flex-1">
@@ -1772,18 +1772,18 @@
   </div>
 
   <!-- ==================== MODAL: PLAN DETAIL ==================== -->
-  <div id="planDetailModal" class="fixed inset-0 bg-primary/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-surface-container-lowest max-w-2xl w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[90vh] font-mono">
-      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0">
+  <div id="planDetailModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest max-w-2xl w-full border border-surface-container-highest shadow-2xl flex flex-col max-h-[90vh] font-mono rounded-xl overflow-hidden" style="background-color: #ffffff;">
+      <div class="p-4 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between shrink-0" style="background-color: #f6f3f2;">
         <div>
-          <div class="text-[10px] font-mono text-secondary uppercase tracking-wider">Workout Plan</div>
+          <div class="text-[10px] font-mono text-secondary uppercase tracking-wider font-semibold">Workout Plan</div>
           <div id="planDetailName" class="font-bold text-base text-primary"></div>
         </div>
-        <button onclick="closePlanDetailModal()" class="text-secondary hover:text-primary">
-          <span class="material-symbols-outlined">close</span>
+        <button onclick="closePlanDetailModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container-high transition">
+          <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
-      <div class="p-4 overflow-y-auto flex-1 space-y-4" id="planDetailContent"></div>
+      <div class="p-4 overflow-y-auto flex-1 space-y-4" style="background-color: #ffffff;" id="planDetailContent"></div>
     </div>
   </div>
 
@@ -8254,37 +8254,39 @@ INSTRUCTIONS:
       document.getElementById('planDetailName').textContent = plan.name;
       const content = document.getElementById('planDetailContent');
       content.innerHTML = (plan.days || []).map(day => `
-        <div class="border border-surface-container-highest">
-          <div class="px-4 py-2 bg-surface-container flex items-center justify-between">
+        <div class="border border-surface-container-highest rounded-lg overflow-hidden bg-surface-container-lowest shadow-xs">
+          <div class="px-4 py-2.5 bg-surface-container flex items-center justify-between border-b border-surface-container-highest">
             <div>
-              <span class="text-[10px] font-mono text-secondary uppercase">Day ${day.dayNum}</span>
+              <span class="text-[10px] font-mono text-secondary uppercase font-bold">Day ${day.dayNum}</span>
               <span class="text-primary font-bold text-xs ml-2">${day.dayName}</span>
             </div>
             <span class="text-[10px] text-secondary font-mono">${day.focus || ''}</span>
           </div>
-          <table class="w-full text-[10px] font-mono">
-            <thead>
-              <tr class="border-b border-surface-container-highest text-secondary">
-                <th class="text-left px-3 py-1.5 font-semibold">#</th>
-                <th class="text-left px-3 py-1.5 font-semibold">Exercise</th>
-                <th class="text-left px-3 py-1.5 font-semibold">Muscle</th>
-                <th class="text-left px-3 py-1.5 font-semibold">Sets</th>
-                <th class="text-left px-3 py-1.5 font-semibold">Work</th>
-                <th class="text-left px-3 py-1.5 font-semibold">Rest</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(day.exercises || []).map((ex, i) => `
-                <tr class="border-b border-surface-container-highest hover:bg-surface-container/50 transition">
-                  <td class="px-3 py-2 text-secondary">${i+1}</td>
-                  <td class="px-3 py-2 text-primary font-semibold">${ex.exercise}</td>
-                  <td class="px-3 py-2 text-secondary">${ex.muscle}</td>
-                  <td class="px-3 py-2 text-primary">${ex.sets}</td>
-                  <td class="px-3 py-2 text-primary">${ex.reps || (ex.dur ? ex.dur + 's' : '—')}</td>
-                  <td class="px-3 py-2 text-secondary">${ex.rest}s</td>
-                </tr>`).join('')}
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="w-full text-[10px] font-mono bg-surface-container-lowest">
+              <thead>
+                <tr class="border-b border-surface-container-highest text-secondary bg-surface-container-low/60">
+                  <th class="text-left px-3 py-2 font-semibold">#</th>
+                  <th class="text-left px-3 py-2 font-semibold">Exercise</th>
+                  <th class="text-left px-3 py-2 font-semibold">Muscle</th>
+                  <th class="text-left px-3 py-2 font-semibold">Sets</th>
+                  <th class="text-left px-3 py-2 font-semibold">Work</th>
+                  <th class="text-left px-3 py-2 font-semibold">Rest</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-container-highest">
+                ${(day.exercises || []).map((ex, i) => `
+                  <tr class="hover:bg-surface-container-low transition bg-surface-container-lowest">
+                    <td class="px-3 py-2.5 text-secondary font-bold">${i+1}</td>
+                    <td class="px-3 py-2.5 text-primary font-bold">${ex.exercise}</td>
+                    <td class="px-3 py-2.5 text-secondary">${ex.muscle}</td>
+                    <td class="px-3 py-2.5 text-primary font-semibold">${ex.sets}</td>
+                    <td class="px-3 py-2.5 text-primary font-semibold">${ex.reps || (ex.dur ? ex.dur + 's' : '—')}</td>
+                    <td class="px-3 py-2.5 text-secondary font-mono">${ex.rest}s</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
         </div>`).join('');
       document.getElementById('planDetailModal').classList.remove('hidden');
     }
