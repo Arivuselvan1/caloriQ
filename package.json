@@ -1,0 +1,25 @@
+{
+  "name": "caloriq",
+  "version": "1.0.0",
+  "description": "Intelligent Indian Food & Calorie Tracker, Ria AI Nutritionist & Health Connect Suite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "nutrition",
+    "calorie-tracker",
+    "indian-food",
+    "health-connect",
+    "fitbit",
+    "gemini-vision",
+    "ria-ai"
+  ],
+  "author": "Arivuselvan",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}

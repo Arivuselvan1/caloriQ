@@ -412,7 +412,7 @@ let healthConnect = {
 
 // 20-Minute Automatic Health Connect Background Sync Worker
 const AUTO_SYNC_INTERVAL_MS = 20 * 60 * 1000;
-setInterval(() => {
+const autoSyncTimer = setInterval(() => {
   if (healthConnect.status === 'available' && healthConnect.permissions.steps) {
     const autoDelta = Math.floor(Math.random() * 120) + 40;
     healthConnect.metrics.steps += autoDelta;
@@ -431,6 +431,9 @@ setInterval(() => {
     console.log(`[Auto-Sync] 20-minute Health Connect background sync executed (+${autoDelta} steps)`);
   }
 }, AUTO_SYNC_INTERVAL_MS);
+if (autoSyncTimer && autoSyncTimer.unref) {
+  autoSyncTimer.unref();
+}
 
 function getTodayStr() {
   const d = new Date();
@@ -4398,7 +4401,7 @@ function getOfflineRiaResponse(query, profile, todayMeals) {
   return `### Ria's Personalized Consultation ✨\nI have reviewed your profile (Goal: **${profile.goal} weight**, Daily Target: **${profile.dailyCalorieTarget} kcal**).\n\n**Key Directives Today:**\n- **Hydration**: Ensure you hit at least 8–10 glasses of water.\n- **Meal Timing**: Keep a 3–4 hour gap between dinner and sleep.\n- **Macro Balance**: Aim for **${profile.proteinTargetG}g protein** across your meals.\n\nAsk me anything! For example: *"What should I eat for dinner?"*, *"How to increase protein on vegetarian diet?"*, or *"Suggest a 400 kcal lunch"*.`;
 }
 
-const server = http.createServer(async (req, res) => {
+async function requestHandler(req, res) {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
@@ -5470,17 +5473,23 @@ const server = http.createServer(async (req, res) => {
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not Found');
-});
+}
 
-const HOST = '0.0.0.0';
-server.listen(PORT, HOST, () => {
-  const ips = getNetworkIps();
-  console.log('=======================================================');
-  console.log('🚀 CaloriQ Local Server is LIVE on your Network!');
-  console.log(`• Local:   http://localhost:${PORT}`);
-  ips.forEach(ip => {
-    console.log(`• Network: http://${ip}:${PORT}`);
+const server = http.createServer(requestHandler);
+
+if (require.main === module) {
+  const HOST = '0.0.0.0';
+  server.listen(PORT, HOST, () => {
+    const ips = getNetworkIps();
+    console.log('=======================================================');
+    console.log('🚀 CaloriQ Local Server is LIVE on your Network!');
+    console.log(`• Local:   http://localhost:${PORT}`);
+    ips.forEach(ip => {
+      console.log(`• Network: http://${ip}:${PORT}`);
+    });
+    console.log('• Accessible from phones, tablets, & laptops on Wi-Fi');
+    console.log('=======================================================');
   });
-  console.log('• Accessible from phones, tablets, & laptops on Wi-Fi');
-  console.log('=======================================================');
-});
+}
+
+module.exports = requestHandler;
