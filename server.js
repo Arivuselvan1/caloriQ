@@ -130,21 +130,55 @@ function registerOrUpdateDevice(enclave, deviceId, deviceName, platform, clientI
 }
 
 const CONFIG_FILE = path.join(__dirname, '.caloriq_config.json');
-// Dual Gemini API Keys: Key 2 exclusively for Vision Scanning, Key 1 for general operations
+const ENV_LOCAL_FILE = path.join(__dirname, '.env.local');
+
+// Automatically read .env.local if present
+if (fs.existsSync(ENV_LOCAL_FILE)) {
+  try {
+    const envLines = fs.readFileSync(ENV_LOCAL_FILE, 'utf8').split('\n');
+    for (const line of envLines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx !== -1) {
+        const k = trimmed.substring(0, eqIdx).trim();
+        const v = trimmed.substring(eqIdx + 1).trim();
+        if (!process.env[k]) process.env[k] = v;
+      }
+    }
+  } catch (e) {}
+}
+
+// Dual Gemini API Keys & Supabase Database Configuration
 let userConfig = {
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  geminiVisionApiKey: process.env.GEMINI_VISION_API_KEY || ''
+  geminiVisionApiKey: process.env.GEMINI_VISION_API_KEY || '',
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+  supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || ''
 };
+
+let supabase = null;
+
 try {
   if (fs.existsSync(CONFIG_FILE)) {
     const saved = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
     if (saved.geminiApiKey) userConfig.geminiApiKey = saved.geminiApiKey;
     if (saved.geminiVisionApiKey) userConfig.geminiVisionApiKey = saved.geminiVisionApiKey;
-    console.log('[Config] Loaded Dual Gemini API Keys:');
-    console.log('• General Operations Key (Ria AI & Chat):', userConfig.geminiApiKey.substring(0, 8) + '...' + userConfig.geminiApiKey.substring(userConfig.geminiApiKey.length - 4));
-    console.log('• Dedicated Vision Key (Image Food Scanning):', userConfig.geminiVisionApiKey.substring(0, 8) + '...' + userConfig.geminiVisionApiKey.substring(userConfig.geminiVisionApiKey.length - 4));
+    if (saved.supabaseUrl) userConfig.supabaseUrl = saved.supabaseUrl;
+    if (saved.supabaseKey) userConfig.supabaseKey = saved.supabaseKey;
+    console.log('[Config] Loaded Credentials:');
+    if (userConfig.geminiApiKey) console.log('• General Operations Key (Ria AI & Chat):', userConfig.geminiApiKey.substring(0, 8) + '...' + userConfig.geminiApiKey.substring(userConfig.geminiApiKey.length - 4));
+    if (userConfig.geminiVisionApiKey) console.log('• Dedicated Vision Key (Image Food Scanning):', userConfig.geminiVisionApiKey.substring(0, 8) + '...' + userConfig.geminiVisionApiKey.substring(userConfig.geminiVisionApiKey.length - 4));
+    if (userConfig.supabaseUrl) console.log('• Supabase Cloud URL:', userConfig.supabaseUrl);
   }
 } catch (e) {}
+
+if (userConfig.supabaseUrl && userConfig.supabaseKey) {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    supabase = createClient(userConfig.supabaseUrl, userConfig.supabaseKey);
+  } catch (e) {}
+}
 
 function saveConfigToFile() {
   try {
@@ -4410,7 +4444,10 @@ async function requestHandler(req, res) {
       hasVisionApiKey: !!userConfig.geminiVisionApiKey,
       maskedVisionKey: userConfig.geminiVisionApiKey ? userConfig.geminiVisionApiKey.substring(0, 6) + '...' + userConfig.geminiVisionApiKey.substring(userConfig.geminiVisionApiKey.length - 4) : '',
       visionApiKey: userConfig.geminiVisionApiKey,
-      apiKey: userConfig.geminiApiKey
+      apiKey: userConfig.geminiApiKey,
+      hasSupabase: !!(userConfig.supabaseUrl && userConfig.supabaseKey),
+      supabaseUrl: userConfig.supabaseUrl,
+      supabaseKey: userConfig.supabaseKey
     }));
     return;
   }

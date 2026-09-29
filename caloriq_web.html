@@ -71,8 +71,8 @@
         }
       }
     };
-  </script>
   <script src="/qr_lib.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     @layer base {
@@ -6259,6 +6259,14 @@
         if (cfg.apiKey) _serverGeneralKey = cfg.apiKey;
         if (cfg.hasVisionApiKey) {
           updateScannerKeyBanner();
+        }
+        if (cfg.supabaseUrl && cfg.supabaseKey) {
+          window._supabaseUrl = cfg.supabaseUrl;
+          window._supabaseKey = cfg.supabaseKey;
+          if (window.supabase && typeof window.supabase.createClient === 'function') {
+            window.supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+            console.log('[CaloriQ] Supabase Client Connected:', cfg.supabaseUrl);
+          }
         }
         if (cfg.hasApiKey && !clientKey) {
           hasKey = true;
